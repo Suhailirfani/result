@@ -6,7 +6,15 @@
         <h1 class="display-4 fw-bold text-primary mb-4">Welcome to Result Platform</h1>
         <p class="lead mb-5">Easily access your class results securely and quickly.</p>
         <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-            <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-primary btn-lg px-4 gap-3">Staff Login</a>
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <a href="{% url 'results_app:superadmin_dashboard' %}" class="btn btn-primary btn-lg px-4 gap-3">Superadmin Dashboard</a>
+                {% else %}
+                    <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-primary btn-lg px-4 gap-3">Staff Dashboard</a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'results_app:login' %}" class="btn btn-primary btn-lg px-4 gap-3">Staff Login</a>
+            {% endif %}
         </div>
     </div>
 </div>
