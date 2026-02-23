@@ -15,12 +15,14 @@ class Student(models.Model):
     fathers_name = models.CharField(max_length=255, blank=True, null=True)
     register_number = models.CharField(max_length=50, db_index=True)
     student_class = models.IntegerField()  # 1 to 10
+    division = models.CharField(max_length=10, blank=True, null=True) # e.g. 'A', 'B'
     
     class Meta:
         unique_together = ('institution', 'register_number')
 
     def __str__(self):
-        return f"{self.name} ({self.register_number}) - Class {self.student_class}"
+        div_str = f" {self.division}" if self.division else ""
+        return f"{self.name} ({self.register_number}) - Class {self.student_class}{div_str}"
 
 class Subject(models.Model):
     institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='subjects')

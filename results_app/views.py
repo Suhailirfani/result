@@ -165,7 +165,6 @@ def bulk_upload_view(request):
         form = BulkUploadForm(request.POST, request.FILES)
         if form.is_valid():
             excel_file = form.cleaned_data['file']
-            class_num = form.cleaned_data['student_class']
             
             if not (excel_file.name.endswith('.xlsx') or excel_file.name.endswith('.xls')):
                 messages.error(request, 'Please upload a valid Excel file (.xlsx or .xls).')
@@ -173,38 +172,41 @@ def bulk_upload_view(request):
                 
             try:
                 df = pd.read_excel(excel_file)
-                # Ensure all columns are treated as strings to avoid type issues with registers/names
+                # Ensure all columns are treated as strings to avoid type issues
                 df = df.astype(str)
                 # Strip whitespace from column names
                 df.columns = df.columns.str.strip()
                 
                 header = df.columns.tolist()
                 
-                if 'Register Number' not in header or 'Name' not in header:
-                    messages.error(request, 'The Excel file must contain "Register Number" and "Name" columns.')
+                if 'Register Number' not in header or 'Name' not in header or 'Class' not in header:
+                    messages.error(request, 'The Excel file must contain "Register Number", "Name", and "Class" columns.')
                     return redirect('results_app:bulk_upload')
                     
                 fathers_name_col = "Father's Name" if "Father's Name" in header else None
+                division_col = "Division" if "Division" in header else None
                 
                 # Determine which columns are subjects
-                fixed_cols = ['Register Number', 'Name']
-                if fathers_name_col:
-                    fixed_cols.append(fathers_name_col)
+                fixed_cols = ['Register Number', 'Name', 'Class']
+                if fathers_name_col: fixed_cols.append(fathers_name_col)
+                if division_col: fixed_cols.append(division_col)
                     
                 subjects = [c for c in header if c not in fixed_cols and "Unnamed" not in str(c)]
-                
-                # Fetch / Create subjects for this class
-                subject_objs = {}
-                for sub_name in subjects:
-                    sub, _ = Subject.objects.get_or_create(institution=institution, name=sub_name.strip(), student_class=class_num)
-                    subject_objs[sub_name] = sub
                     
                 for index, row in df.iterrows():
                     reg = row['Register Number'].strip()
                     if reg == 'nan' or not reg: continue
                     
+                    class_val_str = row['Class'].strip()
+                    if class_val_str == 'nan' or not class_val_str: continue
+                    try:
+                        class_num = int(float(class_val_str))
+                    except ValueError:
+                        continue # Skip invalid class numbers
+                    
                     name = row['Name'].strip() if str(row['Name']) != 'nan' else ''
                     fathers_name = row[fathers_name_col].strip() if fathers_name_col and str(row[fathers_name_col]) != 'nan' else None
+                    division = row[division_col].strip() if division_col and str(row[division_col]) != 'nan' else None
                     
                     student, _ = Student.objects.get_or_create(
                         institution=institution,
@@ -212,24 +214,34 @@ def bulk_upload_view(request):
                         defaults={
                             'name': name, 
                             'student_class': class_num,
-                            'fathers_name': fathers_name
+                            'fathers_name': fathers_name,
+                            'division': division
                         }
                     )
                     
-                    # If student exists but fathers name is new, update it
+                    # Update fields if changed
+                    updated = False
                     if fathers_name and student.fathers_name != fathers_name:
                         student.fathers_name = fathers_name
+                        updated = True
+                    if division and student.division != division:
+                        student.division = division
+                        updated = True
+                    if updated:
                         student.save()
                     
                     # Update marks
                     for sub_name in subjects:
+                        # Fetch / Create subject for this specific student's class
+                        sub, _ = Subject.objects.get_or_create(institution=institution, name=sub_name.strip(), student_class=class_num)
+                        
                         mark_val = str(row[sub_name]).strip()
                         if mark_val and mark_val != 'nan':
                             try:
                                 float_mark = float(mark_val)
                                 Result.objects.update_or_create(
                                     student=student,
-                                    subject=subject_objs[sub_name],
+                                    subject=sub,
                                     defaults={'marks': float_mark}
                                 )
                             except ValueError:

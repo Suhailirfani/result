@@ -15,15 +15,11 @@
             <div class="card-body">
                 <div class="alert alert-info">
                     <strong>Format Required:</strong> Excel file (.xlsx or .xls) with headers.<br>
-                    Expected Columns: <code>Register Number</code>, <code>Name</code>, <code>Father's Name</code> (optional), <code>Subject 1</code>, ...<br>
-                    Example: <code>101, John Doe, Richard Doe, 40, 45, 38, 50</code>
+                    Expected Columns: <code>Register Number</code>, <code>Name</code>, <code>Class</code>, <code>Division</code> (optional), <code>Father's Name</code> (optional), <code>Subject 1</code>, ...<br>
+                    Example row: <code>101, John Doe, 5, A, Richard Doe, 40, 45, 38, 50</code>
                 </div>
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Student Class</label>
-                        {{ form.student_class }}
-                    </div>
                     <div class="mb-3">
                         <label class="form-label">Excel File (.xlsx)</label>
                         {{ form.file }}

@@ -28,5 +28,4 @@ class SingleUploadForm(forms.ModelForm):
         }
 
 class BulkUploadForm(forms.Form):
-    student_class = forms.IntegerField(required=True, min_value=1, max_value=10, widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Class (e.g. 5)'}))
     file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx, .xls'}))

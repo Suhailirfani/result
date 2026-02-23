@@ -37,6 +37,9 @@
                 </div>
                 <div class="text-end text-sm-start">
                     <span>Reg: {{ student.register_number }} | Class: {{ student.student_class }}</span>
+                    {% if student.division %}
+                        <br><span>Division: {{ student.division }}</span>
+                    {% endif %}
                 </div>
             </div>
             <div class="card-body p-0">
