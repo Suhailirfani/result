@@ -12,10 +12,27 @@
 <div class="alert alert-primary shadow-sm mb-4">
     <h5 class="alert-heading">Your Student Result Portal Link</h5>
     <p class="mb-1">Share this unique link with your students. Students can only see results published to your institution through this portal:</p>
-    <a href="{% url 'results_app:student_result' request.user.institution.id %}" target="_blank" class="fw-bold text-break">
-        {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}
-    </a>
+    <div class="d-flex flex-column flex-md-row align-items-md-center gap-2 mt-2">
+        <a id="portalLink" href="{% url 'results_app:student_result' request.user.institution.id %}" target="_blank" class="fw-bold text-break mb-2 mb-md-0 me-md-3">
+            {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}
+        </a>
+        <div class="d-flex gap-2">
+            <button onclick="copyToClipboard()" class="btn btn-sm btn-outline-primary">📋 Copy Link</button>
+            <a href="https://api.whatsapp.com/send?text=Check out your results on our portal: {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}" target="_blank" class="btn btn-sm btn-success">💬 WhatsApp</a>
+        </div>
+    </div>
 </div>
+
+<script>
+function copyToClipboard() {
+    var linkText = document.getElementById("portalLink").innerText;
+    navigator.clipboard.writeText(linkText.trim()).then(function() {
+        alert("Link copied to clipboard!");
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+</script>
 
 <div class="row">
     <div class="col-md-12">
