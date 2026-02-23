@@ -17,7 +17,7 @@
             {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}
         </a>
         <div class="d-flex gap-2">
-            <button onclick="copyToClipboard()" class="btn btn-sm btn-outline-primary">📋 Copy Link</button>
+            <button id="copyBtn" onclick="copyToClipboard()" class="btn btn-sm btn-outline-primary">📋 Copy Link</button>
             <a href="https://api.whatsapp.com/send?text=Check out your results on our portal: {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}" target="_blank" class="btn btn-sm btn-success">💬 WhatsApp</a>
         </div>
     </div>
@@ -26,8 +26,17 @@
 <script>
 function copyToClipboard() {
     var linkText = document.getElementById("portalLink").innerText;
+    var btn = document.getElementById("copyBtn");
     navigator.clipboard.writeText(linkText.trim()).then(function() {
-        alert("Link copied to clipboard!");
+        var originalText = btn.innerHTML;
+        btn.innerHTML = "✅ Copied!";
+        btn.classList.add("btn-success");
+        btn.classList.remove("btn-outline-primary");
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove("btn-success");
+            btn.classList.add("btn-outline-primary");
+        }, 2000);
     }, function(err) {
         console.error('Could not copy text: ', err);
     });
