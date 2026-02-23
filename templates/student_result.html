@@ -28,7 +28,8 @@
         <div class="card shadow-sm border-primary">
             <div class="card-header bg-primary text-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
                 <div>
-                    <h5 class="mb-0">{{ student.name }}</h5>
+                    <h6 class="text-uppercase text-light mb-1"><small>{{ institution.name }}</small></h6>
+                    <h4 class="mb-0 fw-bold">{{ student.name }}</h4>
                     {% if student.fathers_name %}
                         <small class="text-light">Father's Name: {{ student.fathers_name }}</small>
                     {% endif %}
@@ -44,7 +45,7 @@
                 {% if results_by_exam %}
                     {% for exam_name, exam_data in results_by_exam.items %}
                     <div class="bg-light px-3 py-2 border-bottom border-top mt-{% if not forloop.first %}4{% else %}0{% endif %}">
-                        <h6 class="mb-0 text-primary fw-bold">{{ exam_name }}</h6>
+                        <h5 class="mb-0 text-primary fw-bold text-center py-1">{{ exam_name }}</h5>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
