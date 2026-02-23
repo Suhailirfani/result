@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Add Single Result</h4>
+                <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-sm btn-outline-secondary">Back</a>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success w-100">Save Result</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

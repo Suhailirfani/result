@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Find Your Result</h4>
+            </div>
+            <div class="card-body">
+                <form method="GET">
+                    <div class="mb-3">
+                        <label class="form-label">Register Number</label>
+                        {{ form.register_number }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Fetch Result</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if student %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-primary">
+            <div class="card-header bg-primary text-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                <div>
+                    <h5 class="mb-0">{{ student.name }}</h5>
+                    {% if student.fathers_name %}
+                        <small class="text-light">Father's Name: {{ student.fathers_name }}</small>
+                    {% endif %}
+                </div>
+                <div class="text-end text-sm-start">
+                    <span>Reg: {{ student.register_number }} | Class: {{ student.student_class }}</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Subject</th>
+                            <th>Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        <tr>
+                            <td>{{ r.subject.name }}</td>
+                            <td><span class="badge bg-success fs-6">{{ r.marks }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">No results found for this student.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-group-divider">
+                        <tr>
+                            <th><strong>Total Marks</strong></th>
+                            <th><span class="badge bg-primary fs-5">{{ total_marks }}</span></th>
+                        </tr>
+                    </tfoot>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
