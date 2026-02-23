@@ -5,6 +5,12 @@ app_name = 'results_app'
 
 urlpatterns = [
     path('', views.home_view, name='home'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('register/', views.register_institution, name='register'),
+    path('pending-approval/', views.pending_approval_view, name='pending_approval'),
+    path('admin-dashboard/', views.superadmin_dashboard_view, name='superadmin_dashboard'),
+    path('admin-dashboard/approve/<int:inst_id>/', views.approve_institution_view, name='approve_institution'),
     path('student/result/', views.student_result_view, name='student_result'),
     path('staff/dashboard/', views.staff_dashboard_view, name='staff_dashboard'),
     path('staff/class/<int:class_num>/', views.class_result_view, name='class_result'),

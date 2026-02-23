@@ -21,10 +21,19 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url 'results_app:student_result' %}">Student Result</a></li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'results_app:staff_dashboard' %}">Staff Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-warning" href="{% url 'admin:index' %}">Admin</a></li>
+                        {% if user.is_superuser %}
+                            <li class="nav-item"><a class="nav-link fw-bold text-warning" href="{% url 'results_app:superadmin_dashboard' %}">Superadmin Dashboard</a></li>
+                        {% else %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'results_app:staff_dashboard' %}">Staff Dashboard</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link text-danger" href="{% url 'results_app:logout' %}">Logout</a></li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'admin:login' %}">Staff Login</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'results_app:register' %}">Register Institution</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'results_app:login' %}">Staff Login</a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>

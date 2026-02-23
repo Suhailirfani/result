@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center mt-5">
+        <div class="alert alert-warning shadow-sm">
+            <h2 class="alert-heading mb-3">Account Pending Approval</h2>
+            <p class="fs-5">Your institution account has been successfully created, but it is currently pending approval by the super administrator.</p>
+            <hr>
+            <p class="mb-0 text-muted">You will be notified or granted access once your account is verified. Thank you for your patience!</p>
+        </div>
+        <a href="{% url 'results_app:home' %}" class="btn btn-outline-primary mt-3">Return Home</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,13 +1,70 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Student, Subject, Result
-from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm
+from .models import Student, Subject, Result, Institution
+from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm, InstitutionRegistrationForm
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.db.models import Sum
+from django.contrib.auth.forms import AuthenticationForm
 import pandas as pd
+
+def register_institution(request):
+    if request.method == 'POST':
+        form = InstitutionRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+            Institution.objects.create(user=user, name=user.username)
+            auth_login(request, user)
+            return redirect('results_app:pending_approval')
+    else:
+        form = InstitutionRegistrationForm()
+    return render(request, 'register.html', {'form': form})
+
+@login_required
+def pending_approval_view(request):
+    if hasattr(request.user, 'institution') and request.user.institution.is_approved:
+        return redirect('results_app:staff_dashboard')
+    return render(request, 'pending_approval.html')
 
 def home_view(request):
     return render(request, 'home.html')
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            if user.is_superuser:
+                return redirect('results_app:superadmin_dashboard')
+            else:
+                return redirect('results_app:staff_dashboard')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'login.html', {'form': form})
+
+def logout_view(request):
+    auth_logout(request)
+    return redirect('results_app:home')
+
+@login_required
+def superadmin_dashboard_view(request):
+    if not request.user.is_superuser:
+        return redirect('results_app:home')
+    institutions = Institution.objects.all().order_by('is_approved', 'name')
+    return render(request, 'superadmin_dashboard.html', {'institutions': institutions})
+
+@login_required
+def approve_institution_view(request, inst_id):
+    if not request.user.is_superuser:
+        return redirect('results_app:home')
+    inst = get_object_or_404(Institution, id=inst_id)
+    inst.is_approved = not inst.is_approved
+    inst.save()
+    messages.success(request, f"Institution '{inst.name}' approval status updated.")
+    return redirect('results_app:superadmin_dashboard')
 
 def student_result_view(request):
     form = StudentSearchForm(request.GET or None)
@@ -15,25 +72,33 @@ def student_result_view(request):
     student = None
     total_marks = 0
     if request.GET and form.is_valid():
+        institution = form.cleaned_data['institution']
         register_number = form.cleaned_data['register_number']
         try:
-            student = Student.objects.get(register_number=register_number)
+            student = Student.objects.get(institution=institution, register_number=register_number)
             results = student.results.all()
             total_marks = sum(r.marks for r in results)
         except Student.DoesNotExist:
-            messages.error(request, "Student not found. Please check your name and register number.")
+            messages.error(request, "Student not found in the selected institution. Please check your register number.")
     return render(request, 'student_result.html', {'form': form, 'results': results, 'student': student, 'total_marks': total_marks})
 
 @login_required
 def staff_dashboard_view(request):
-    # Classes available
-    classes = Student.objects.values_list('student_class', flat=True).distinct()
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    classes = Student.objects.filter(institution=institution).values_list('student_class', flat=True).distinct()
     return render(request, 'staff_dashboard.html', {'classes': sorted(list(classes))})
 
 @login_required
 def class_result_view(request, class_num):
-    students = Student.objects.filter(student_class=class_num).annotate(total_marks=Sum('results__marks'))
-    subjects = Subject.objects.filter(student_class=class_num)
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    students = Student.objects.filter(institution=institution, student_class=class_num).annotate(total_marks=Sum('results__marks'))
+    subjects = Subject.objects.filter(institution=institution, student_class=class_num)
     # Organize data for table
     data = []
     for s in students:
@@ -49,30 +114,53 @@ def class_result_view(request, class_num):
 
 @login_required
 def toppers_view(request, class_num):
-    students = Student.objects.filter(student_class=class_num).annotate(total_marks=Sum('results__marks')).order_by('-total_marks')
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    students = Student.objects.filter(institution=institution, student_class=class_num).annotate(total_marks=Sum('results__marks')).order_by('-total_marks')
     # Let's say top 3
     toppers = students[:3]
     return render(request, 'toppers.html', {'toppers': toppers, 'class_num': class_num})
 
 @login_required
 def rank_list_view(request, class_num):
-    students = Student.objects.filter(student_class=class_num).annotate(total_marks=Sum('results__marks')).order_by('-total_marks')
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    students = Student.objects.filter(institution=institution, student_class=class_num).annotate(total_marks=Sum('results__marks')).order_by('-total_marks')
     return render(request, 'rank_list.html', {'students': students, 'class_num': class_num})
 
 @login_required
 def single_upload_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
     if request.method == 'POST':
         form = SingleUploadForm(request.POST)
         if form.is_valid():
-            form.save()
+            result = form.save(commit=False)
+            result.student.institution = institution
+            result.subject.institution = institution
+            result.save()
             messages.success(request, 'Result added successfully!')
             return redirect('results_app:single_upload')
     else:
         form = SingleUploadForm()
+        # restrict foreign keys to the current institution
+        form.fields['student'].queryset = Student.objects.filter(institution=institution)
+        form.fields['subject'].queryset = Subject.objects.filter(institution=institution)
     return render(request, 'single_upload.html', {'form': form})
 
 @login_required
 def bulk_upload_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    
     if request.method == 'POST':
         form = BulkUploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -108,7 +196,7 @@ def bulk_upload_view(request):
                 # Fetch / Create subjects for this class
                 subject_objs = {}
                 for sub_name in subjects:
-                    sub, _ = Subject.objects.get_or_create(name=sub_name.strip(), student_class=class_num)
+                    sub, _ = Subject.objects.get_or_create(institution=institution, name=sub_name.strip(), student_class=class_num)
                     subject_objs[sub_name] = sub
                     
                 for index, row in df.iterrows():
@@ -119,6 +207,7 @@ def bulk_upload_view(request):
                     fathers_name = row[fathers_name_col].strip() if fathers_name_col and str(row[fathers_name_col]) != 'nan' else None
                     
                     student, _ = Student.objects.get_or_create(
+                        institution=institution,
                         register_number=reg, 
                         defaults={
                             'name': name, 
