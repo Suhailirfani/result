@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Student, Subject, Result, Institution
+from .models import Student, Subject, Result, Institution, Exam
 from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm, InstitutionRegistrationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.forms import AuthenticationForm
 import pandas as pd
@@ -74,6 +75,7 @@ def student_result_view(request, inst_id):
         
     form = StudentSearchForm(request.GET or None)
     results_by_exam = {}
+    student = None
     total_marks = 0
     if request.GET and form.is_valid():
         register_number = form.cleaned_data['register_number']
