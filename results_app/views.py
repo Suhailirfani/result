@@ -73,18 +73,24 @@ def student_result_view(request, inst_id):
         return redirect('results_app:home')
         
     form = StudentSearchForm(request.GET or None)
-    results = None
-    student = None
+    results_by_exam = {}
     total_marks = 0
     if request.GET and form.is_valid():
         register_number = form.cleaned_data['register_number']
         try:
             student = Student.objects.get(institution=institution, register_number=register_number)
-            results = student.results.all()
-            total_marks = sum(r.marks for r in results)
+            results = student.results.select_related('exam', 'subject').all()
+            
+            for r in results:
+                exam_name = r.exam.name if r.exam else "General Exam"
+                if exam_name not in results_by_exam:
+                    results_by_exam[exam_name] = {'marks': [], 'total': 0}
+                results_by_exam[exam_name]['marks'].append(r)
+                results_by_exam[exam_name]['total'] += r.marks
+                
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
-    return render(request, 'student_result.html', {'form': form, 'results': results, 'student': student, 'total_marks': total_marks, 'institution': institution})
+    return render(request, 'student_result.html', {'form': form, 'results_by_exam': results_by_exam, 'student': student, 'institution': institution})
 
 @login_required
 def staff_dashboard_view(request):
@@ -101,12 +107,28 @@ def class_result_view(request, class_num):
         return redirect('results_app:pending_approval')
         
     institution = request.user.institution
-    students = Student.objects.filter(institution=institution, student_class=class_num).annotate(total_marks=Sum('results__marks'))
+    from .models import Exam
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+    
+    exam_id = request.GET.get('exam')
+    selected_exam = None
+    if exam_id:
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+    elif exams.exists():
+        selected_exam = exams.first()
+        
+    if selected_exam:
+        students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
+            total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
+        )
+    else:
+        students = Student.objects.none()
+        
     subjects = Subject.objects.filter(institution=institution, student_class=class_num)
     # Organize data for table
     data = []
     for s in students:
-        student_results = Result.objects.filter(student=s)
+        student_results = Result.objects.filter(student=s, exam=selected_exam)
         res_dict = {r.subject.name: r.marks for r in student_results}
         
         marks_list = []
@@ -114,7 +136,7 @@ def class_result_view(request, class_num):
             marks_list.append(res_dict.get(sub.name, "-"))
             
         data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0})
-    return render(request, 'class_result.html', {'class_num': class_num, 'data': data, 'subjects': subjects})
+    return render(request, 'class_result.html', {'class_num': class_num, 'data': data, 'subjects': subjects, 'exams': exams, 'selected_exam': selected_exam})
 
 @login_required
 def toppers_view(request, class_num):
@@ -122,10 +144,26 @@ def toppers_view(request, class_num):
         return redirect('results_app:pending_approval')
         
     institution = request.user.institution
-    students = Student.objects.filter(institution=institution, student_class=class_num).annotate(total_marks=Sum('results__marks')).order_by('-total_marks')
+    from .models import Exam
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+    
+    exam_id = request.GET.get('exam')
+    selected_exam = None
+    if exam_id:
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+    elif exams.exists():
+        selected_exam = exams.first()
+        
+    if selected_exam:
+        students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
+            total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
+        ).order_by('-total_marks')
+    else:
+        students = Student.objects.none()
+        
     # Let's say top 3
     toppers = students[:3]
-    return render(request, 'toppers.html', {'toppers': toppers, 'class_num': class_num})
+    return render(request, 'toppers.html', {'toppers': toppers, 'class_num': class_num, 'exams': exams, 'selected_exam': selected_exam})
 
 @login_required
 def rank_list_view(request, class_num):
@@ -133,8 +171,24 @@ def rank_list_view(request, class_num):
         return redirect('results_app:pending_approval')
         
     institution = request.user.institution
-    students = Student.objects.filter(institution=institution, student_class=class_num).annotate(total_marks=Sum('results__marks')).order_by('-total_marks')
-    return render(request, 'rank_list.html', {'students': students, 'class_num': class_num})
+    from .models import Exam
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+    
+    exam_id = request.GET.get('exam')
+    selected_exam = None
+    if exam_id:
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+    elif exams.exists():
+        selected_exam = exams.first()
+        
+    if selected_exam:
+        students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
+            total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
+        ).order_by('-total_marks')
+    else:
+        students = Student.objects.none()
+        
+    return render(request, 'rank_list.html', {'students': students, 'class_num': class_num, 'exams': exams, 'selected_exam': selected_exam})
 
 @login_required
 def single_upload_view(request):
@@ -148,14 +202,17 @@ def single_upload_view(request):
             result = form.save(commit=False)
             result.student.institution = institution
             result.subject.institution = institution
+            # Note: Form natively validates the 'exam' foreign key belongs to the proper queryset
             result.save()
             messages.success(request, 'Result added successfully!')
             return redirect('results_app:single_upload')
     else:
         form = SingleUploadForm()
         # restrict foreign keys to the current institution
+        from .models import Exam
         form.fields['student'].queryset = Student.objects.filter(institution=institution)
         form.fields['subject'].queryset = Subject.objects.filter(institution=institution)
+        form.fields['exam'].queryset = Exam.objects.filter(institution=institution)
     return render(request, 'single_upload.html', {'form': form})
 
 @login_required
@@ -169,6 +226,10 @@ def bulk_upload_view(request):
         form = BulkUploadForm(request.POST, request.FILES)
         if form.is_valid():
             excel_file = form.cleaned_data['file']
+            exam_name = form.cleaned_data['exam_name']
+            
+            from .models import Exam
+            exam_obj, _ = Exam.objects.get_or_create(institution=institution, name=exam_name)
             
             if not (excel_file.name.endswith('.xlsx') or excel_file.name.endswith('.xls')):
                 messages.error(request, 'Please upload a valid Excel file (.xlsx or .xls).')
@@ -246,6 +307,7 @@ def bulk_upload_view(request):
                                 Result.objects.update_or_create(
                                     student=student,
                                     subject=sub,
+                                    exam=exam_obj,
                                     defaults={'marks': float_mark}
                                 )
                             except ValueError:

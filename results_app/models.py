@@ -35,13 +35,25 @@ class Subject(models.Model):
     def __str__(self):
         return f"{self.name} (Class {self.student_class})"
 
+class Exam(models.Model):
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='exams')
+    name = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ('institution', 'name')
+
+    def __str__(self):
+        return self.name
+
 class Result(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='results')
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='results')
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results', null=True)
     marks = models.FloatField()
 
     class Meta:
-        unique_together = ('student', 'subject')
+        unique_together = ('student', 'subject', 'exam')
 
     def __str__(self):
-        return f"{self.student.name} - {self.subject.name}: {self.marks}"
+        exam_name = self.exam.name if self.exam else "Unassigned"
+        return f"{self.student.name} - {self.subject.name} ({exam_name}): {self.marks}"

@@ -41,34 +41,43 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Subject</th>
-                            <th>Marks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in results %}
-                        <tr>
-                            <td>{{ r.subject.name }}</td>
-                            <td><span class="badge bg-success fs-6">{{ r.marks }}</span></td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="2" class="text-center text-muted">No results found for this student.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot class="table-group-divider">
-                        <tr>
-                            <th><strong>Total Marks</strong></th>
-                            <th><span class="badge bg-primary fs-5">{{ total_marks }}</span></th>
-                        </tr>
-                    </tfoot>
-                </table>
-                </div>
+                {% if results_by_exam %}
+                    {% for exam_name, exam_data in results_by_exam.items %}
+                    <div class="bg-light px-3 py-2 border-bottom border-top mt-{% if not forloop.first %}4{% else %}0{% endif %}">
+                        <h6 class="mb-0 text-primary fw-bold">{{ exam_name }}</h6>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Subject</th>
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in exam_data.marks %}
+                            <tr>
+                                <td>{{ r.subject.name }}</td>
+                                <td><span class="badge bg-success fs-6">{{ r.marks }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">No results found for this exam.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-group-divider">
+                            <tr>
+                                <th><strong>Total Marks</strong></th>
+                                <th><span class="badge bg-primary fs-5">{{ exam_data.total }}</span></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-4 text-center text-muted">No results found for this student.</div>
+                {% endif %}
             </div>
             <div class="card-footer bg-white text-center py-3">
                 <a href="{% url 'results_app:student_result' institution.id %}" class="btn btn-outline-primary px-4">Check Another Result</a>
