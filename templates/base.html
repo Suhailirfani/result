@@ -19,7 +19,6 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'results_app:student_result' %}">Student Result</a></li>
                     {% if user.is_authenticated %}
                         {% if user.is_superuser %}
                             <li class="nav-item"><a class="nav-link fw-bold text-warning" href="{% url 'results_app:superadmin_dashboard' %}">Superadmin Dashboard</a></li>

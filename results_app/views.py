@@ -66,21 +66,25 @@ def approve_institution_view(request, inst_id):
     messages.success(request, f"Institution '{inst.name}' approval status updated.")
     return redirect('results_app:superadmin_dashboard')
 
-def student_result_view(request):
+def student_result_view(request, inst_id):
+    institution = get_object_or_404(Institution, id=inst_id)
+    if not institution.is_approved:
+        messages.error(request, "This institution's portal is currently inactive.")
+        return redirect('results_app:home')
+        
     form = StudentSearchForm(request.GET or None)
     results = None
     student = None
     total_marks = 0
     if request.GET and form.is_valid():
-        institution = form.cleaned_data['institution']
         register_number = form.cleaned_data['register_number']
         try:
             student = Student.objects.get(institution=institution, register_number=register_number)
             results = student.results.all()
             total_marks = sum(r.marks for r in results)
         except Student.DoesNotExist:
-            messages.error(request, "Student not found in the selected institution. Please check your register number.")
-    return render(request, 'student_result.html', {'form': form, 'results': results, 'student': student, 'total_marks': total_marks})
+            messages.error(request, "Student not found in this institution. Please check your register number.")
+    return render(request, 'student_result.html', {'form': form, 'results': results, 'student': student, 'total_marks': total_marks, 'institution': institution})
 
 @login_required
 def staff_dashboard_view(request):

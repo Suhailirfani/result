@@ -9,6 +9,14 @@
     </div>
 </div>
 
+<div class="alert alert-primary shadow-sm mb-4">
+    <h5 class="alert-heading">Your Student Result Portal Link</h5>
+    <p class="mb-1">Share this unique link with your students. Students can only see results published to your institution through this portal:</p>
+    <a href="{% url 'results_app:student_result' request.user.institution.id %}" target="_blank" class="fw-bold text-break">
+        {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}
+    </a>
+</div>
+
 <div class="row">
     <div class="col-md-12">
         <div class="card shadow-sm">

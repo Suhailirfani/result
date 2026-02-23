@@ -14,7 +14,6 @@ class InstitutionRegistrationForm(forms.ModelForm):
         }
 
 class StudentSearchForm(forms.Form):
-    institution = forms.ModelChoiceField(queryset=Institution.objects.filter(is_approved=True), widget=forms.Select(attrs={'class': 'form-control'}))
     register_number = forms.CharField(max_length=50, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Register Number'}))
 
 class SingleUploadForm(forms.ModelForm):

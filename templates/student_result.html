@@ -4,15 +4,11 @@
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h4 class="mb-0">Find Your Result</h4>
+            <div class="card-header bg-white text-center">
+                <h4 class="mb-0">{{ institution.name }} Result Portal</h4>
             </div>
             <div class="card-body">
                 <form method="GET">
-                    <div class="mb-3">
-                        <label class="form-label">Institution</label>
-                        {{ form.institution }}
-                    </div>
                     <div class="mb-3">
                         <label class="form-label">Register Number</label>
                         {{ form.register_number }}
