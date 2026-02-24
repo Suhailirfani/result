@@ -26,19 +26,23 @@
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm border-primary">
-            <div class="card-header bg-primary text-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-                <div>
-                    <h3 class="text-uppercase fw-bold mb-2 text-warning">{{ institution.name }}</h3>
-                    <h4 class="mb-0 fw-bold text-uppercase">{{ student.name }}</h4>
-                    {% if student.fathers_name %}
-                        <small class="text-light text-uppercase">Father's Name: {{ student.fathers_name }}</small>
-                    {% endif %}
+            <div class="card-header bg-primary text-white">
+                <div class="text-center border-bottom border-light pb-2 mb-3">
+                    <h2 class="text-uppercase fw-bold mb-0 text-warning" style="font-family: 'Georgia', serif; letter-spacing: 1px;">{{ institution.name }}</h2>
                 </div>
-                <div class="text-end text-sm-start">
-                    <span>Reg: {{ student.register_number }} | Class: {{ student.student_class }}</span>
-                    {% if student.division %}
-                        <br><span class="text-uppercase">Division: {{ student.division }}</span>
-                    {% endif %}
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+                    <div>
+                        <h4 class="mb-0 fw-bold text-uppercase">{{ student.name }}</h4>
+                        {% if student.fathers_name %}
+                            <small class="text-light text-uppercase">Father's Name: {{ student.fathers_name }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="text-end text-sm-start">
+                        <span>Reg: {{ student.register_number }} | Class: {{ student.student_class }}</span>
+                        {% if student.division %}
+                            <br><span class="text-uppercase">Division: {{ student.division }}</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             <div class="card-body p-0">
