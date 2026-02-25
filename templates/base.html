@@ -28,7 +28,7 @@
                         {% if user.is_superuser %}
                             <li class="nav-item"><a class="nav-link fw-bold text-warning" href="{% url 'results_app:superadmin_dashboard' %}">Superadmin Dashboard</a></li>
                         {% else %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'results_app:staff_dashboard' %}">Staff Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'results_app:staff_dashboard' %}">Institution Dashboard</a></li>
                         {% endif %}
                         <li class="nav-item"><a class="nav-link text-danger" href="{% url 'results_app:logout' %}">Logout</a></li>
                     {% else %}
@@ -36,7 +36,7 @@
                             <a class="nav-link" href="{% url 'results_app:register' %}">Register Institution</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'results_app:login' %}">Staff Login</a>
+                            <a class="nav-link" href="{% url 'results_app:login' %}">Institution Login</a>
                         </li>
                     {% endif %}
                 </ul>

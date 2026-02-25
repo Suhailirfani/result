@@ -10,10 +10,10 @@
                 {% if user.is_superuser %}
                     <a href="{% url 'results_app:superadmin_dashboard' %}" class="btn btn-primary btn-lg px-4 gap-3">Superadmin Dashboard</a>
                 {% else %}
-                    <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-primary btn-lg px-4 gap-3">Staff Dashboard</a>
+                    <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-primary btn-lg px-4 gap-3">Institution Dashboard</a>
                 {% endif %}
             {% else %}
-                <a href="{% url 'results_app:login' %}" class="btn btn-primary btn-lg px-4 gap-3">Staff Login</a>
+                <a href="{% url 'results_app:login' %}" class="btn btn-primary btn-lg px-4 gap-3">Institution Login</a>
             {% endif %}
         </div>
     </div>
