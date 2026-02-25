@@ -31,3 +31,36 @@ class SingleUploadForm(forms.ModelForm):
 class BulkUploadForm(forms.Form):
     exam_name = forms.CharField(max_length=255, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Model Exam 2026'}))
     file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx, .xls'}))
+
+class StudentBulkUploadForm(forms.Form):
+    file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx, .xls'}))
+
+class StudentForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['name', 'fathers_name', 'register_number', 'student_class', 'division']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Student Name'}),
+            'fathers_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Enter Father's Name"}),
+            'register_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Register Number'}),
+            'student_class': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 5'}),
+            'division': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "e.g. A"}),
+        }
+
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ['name', 'student_class']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Mathematics'}),
+            'student_class': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 5'}),
+        }
+
+class InstitutionEditForm(forms.ModelForm):
+    class Meta:
+        model = Institution
+        fields = ['name', 'phone_number']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+        }

@@ -18,4 +18,17 @@ urlpatterns = [
     path('staff/class/<int:class_num>/ranklist/', views.rank_list_view, name='rank_list'),
     path('staff/upload/single/', views.single_upload_view, name='single_upload'),
     path('staff/upload/bulk/', views.bulk_upload_view, name='bulk_upload'),
+    
+    path('staff/add-student/', views.add_student_view, name='add_student'),
+    path('staff/edit-student/<int:student_id>/', views.edit_student_view, name='edit_student'),
+    path('staff/delete-student/<int:student_id>/', views.delete_student_view, name='delete_student'),
+    path('staff/manage-students/<int:class_num>/', views.manage_students_view, name='manage_students'),
+    path('staff/bulk-add-students/', views.bulk_add_students_view, name='bulk_add_students'),
+    
+    path('staff/add-subject/', views.add_subject_view, name='add_subject'),
+    path('staff/edit-subject/<int:subject_id>/', views.edit_subject_view, name='edit_subject'),
+    path('staff/delete-subject/<int:subject_id>/', views.delete_subject_view, name='delete_subject'),
+    path('staff/manage-subjects/<int:class_num>/', views.manage_subjects_view, name='manage_subjects'),
+    
+    path('staff/edit-institution/', views.edit_institution_view, name='edit_institution'),
 ]

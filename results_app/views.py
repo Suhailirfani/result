@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Student, Subject, Result, Institution, Exam
-from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm, InstitutionRegistrationForm
+from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm, InstitutionRegistrationForm, StudentForm, SubjectForm, InstitutionEditForm, StudentBulkUploadForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.db import models
 from django.db.models import Sum
@@ -101,8 +101,10 @@ def staff_dashboard_view(request):
         return redirect('results_app:pending_approval')
         
     institution = request.user.institution
-    classes = Student.objects.filter(institution=institution).values_list('student_class', flat=True).distinct()
-    return render(request, 'staff_dashboard.html', {'classes': sorted(list(classes))})
+    student_classes = set(Student.objects.filter(institution=institution).values_list('student_class', flat=True).distinct())
+    subject_classes = set(Subject.objects.filter(institution=institution).values_list('student_class', flat=True).distinct())
+    classes = student_classes.union(subject_classes)
+    return render(request, 'staff_dashboard.html', {'classes': sorted(list(classes)), 'institution': institution})
 
 @login_required
 def class_result_view(request, class_num):
@@ -325,3 +327,185 @@ def bulk_upload_view(request):
     else:
         form = BulkUploadForm()
     return render(request, 'bulk_upload.html', {'form': form})
+
+@login_required
+def add_student_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    if request.method == 'POST':
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            student = form.save(commit=False)
+            student.institution = institution
+            student.save()
+            messages.success(request, 'Student added successfully.')
+            return redirect('results_app:manage_students', class_num=student.student_class)
+    else:
+        form = StudentForm()
+    return render(request, 'add_student.html', {'form': form, 'title': 'Add Student'})
+
+@login_required
+def edit_student_view(request, student_id):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    student = get_object_or_404(Student, id=student_id, institution=institution)
+    if request.method == 'POST':
+        form = StudentForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Student updated successfully.')
+            return redirect('results_app:manage_students', class_num=student.student_class)
+    else:
+        form = StudentForm(instance=student)
+    return render(request, 'add_student.html', {'form': form, 'title': 'Edit Student'})
+
+@login_required
+def delete_student_view(request, student_id):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    student = get_object_or_404(Student, id=student_id, institution=institution)
+    class_num = student.student_class
+    if request.method == 'POST':
+        student.delete()
+        messages.success(request, 'Student deleted successfully.')
+        return redirect('results_app:manage_students', class_num=class_num)
+    return render(request, 'confirm_delete.html', {'object': student, 'cancel_url': f"/manage-students/{class_num}/"})
+
+@login_required
+def manage_students_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    students = Student.objects.filter(institution=institution, student_class=class_num).order_by('name')
+    return render(request, 'manage_students.html', {'students': students, 'class_num': class_num})
+
+@login_required
+def bulk_add_students_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    if request.method == 'POST':
+        form = StudentBulkUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            excel_file = form.cleaned_data['file']
+            if not (excel_file.name.endswith('.xlsx') or excel_file.name.endswith('.xls')):
+                messages.error(request, 'Please upload a valid Excel file (.xlsx or .xls).')
+                return redirect('results_app:bulk_add_students')
+            
+            try:
+                df = pd.read_excel(excel_file)
+                df = df.astype(str)
+                df.columns = df.columns.str.strip()
+                header = df.columns.tolist()
+                
+                if 'Register Number' not in header or 'Name' not in header or 'Class' not in header:
+                    messages.error(request, 'The Excel file must contain "Register Number", "Name", and "Class" columns.')
+                    return redirect('results_app:bulk_add_students')
+                
+                fathers_name_col = "Father's Name" if "Father's Name" in header else None
+                division_col = "Division" if "Division" in header else None
+                
+                for index, row in df.iterrows():
+                    reg = row['Register Number'].strip()
+                    if reg == 'nan' or not reg: continue
+                    class_val_str = row['Class'].strip()
+                    if class_val_str == 'nan' or not class_val_str: continue
+                    try:
+                        class_num = int(float(class_val_str))
+                    except ValueError:
+                        continue
+                        
+                    name = row['Name'].strip() if str(row['Name']) != 'nan' else ''
+                    fathers_name = row[fathers_name_col].strip() if fathers_name_col and str(row[fathers_name_col]) != 'nan' else None
+                    division = row[division_col].strip() if division_col and str(row[division_col]) != 'nan' else None
+                    
+                    student, created = Student.objects.update_or_create(
+                        institution=institution,
+                        register_number=reg,
+                        defaults={
+                            'name': name,
+                            'student_class': class_num,
+                            'fathers_name': fathers_name,
+                            'division': division
+                        }
+                    )
+                messages.success(request, 'Bulk students added successfully!')
+                return redirect('results_app:staff_dashboard')
+            except Exception as e:
+                messages.error(request, f'Error processing file: {str(e)}')
+                return redirect('results_app:bulk_add_students')
+    else:
+        form = StudentBulkUploadForm()
+    return render(request, 'bulk_add_students.html', {'form': form})
+
+@login_required
+def add_subject_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    if request.method == 'POST':
+        form = SubjectForm(request.POST)
+        if form.is_valid():
+            subject = form.save(commit=False)
+            subject.institution = institution
+            subject.save()
+            messages.success(request, 'Subject added successfully.')
+            return redirect('results_app:manage_subjects', class_num=subject.student_class)
+    else:
+        form = SubjectForm()
+    return render(request, 'add_subject.html', {'form': form, 'title': 'Add Subject'})
+
+@login_required
+def edit_subject_view(request, subject_id):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    subject = get_object_or_404(Subject, id=subject_id, institution=institution)
+    if request.method == 'POST':
+        form = SubjectForm(request.POST, instance=subject)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Subject updated successfully.')
+            return redirect('results_app:manage_subjects', class_num=subject.student_class)
+    else:
+        form = SubjectForm(instance=subject)
+    return render(request, 'add_subject.html', {'form': form, 'title': 'Edit Subject'})
+
+@login_required
+def delete_subject_view(request, subject_id):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    subject = get_object_or_404(Subject, id=subject_id, institution=institution)
+    class_num = subject.student_class
+    if request.method == 'POST':
+        subject.delete()
+        messages.success(request, 'Subject deleted successfully.')
+        return redirect('results_app:manage_subjects', class_num=class_num)
+    return render(request, 'confirm_delete.html', {'object': subject, 'cancel_url': f"/manage-subjects/{class_num}/"})
+
+@login_required
+def manage_subjects_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    subjects = Subject.objects.filter(institution=institution, student_class=class_num).order_by('name')
+    return render(request, 'manage_subjects.html', {'subjects': subjects, 'class_num': class_num})
+
+@login_required
+def edit_institution_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    if request.method == 'POST':
+        form = InstitutionEditForm(request.POST, instance=institution)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Institution details updated successfully.')
+            return redirect('results_app:staff_dashboard')
+    else:
+        form = InstitutionEditForm(instance=institution)
+    return render(request, 'edit_institution.html', {'form': form})
