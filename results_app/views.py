@@ -17,7 +17,8 @@ def register_institution(request):
             user.set_password(form.cleaned_data['password'])
             user.save()
             phone_number = form.cleaned_data.get('phone_number', '')
-            Institution.objects.create(user=user, name=user.username, phone_number=phone_number)
+            institution_name = form.cleaned_data.get('institution_name', user.username)
+            Institution.objects.create(user=user, name=institution_name, phone_number=phone_number)
             auth_login(request, user)
             return redirect('results_app:pending_approval')
     else:
@@ -509,3 +510,23 @@ def edit_institution_view(request):
     else:
         form = InstitutionEditForm(instance=institution)
     return render(request, 'edit_institution.html', {'form': form})
+
+@login_required
+def add_exam_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    if request.method == 'POST':
+        form = ExamForm(request.POST)
+        if form.is_valid():
+            exam = form.save(commit=False)
+            exam.institution = institution
+            exam.save()
+            messages.success(request, 'Exam added successfully.')
+            next_url = request.GET.get('next')
+            if next_url:
+                return redirect(next_url)
+            return redirect('results_app:staff_dashboard')
+    else:
+        form = ExamForm()
+    return render(request, 'add_exam.html', {'form': form, 'title': 'Add Exam'})

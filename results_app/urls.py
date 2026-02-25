@@ -31,4 +31,6 @@ urlpatterns = [
     path('staff/manage-subjects/<int:class_num>/', views.manage_subjects_view, name='manage_subjects'),
     
     path('staff/edit-institution/', views.edit_institution_view, name='edit_institution'),
+    
+    path('staff/add-exam/', views.add_exam_view, name='add_exam'),
 ]

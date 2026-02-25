@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Student, Subject, Result, Institution
+from .models import Student, Subject, Result, Institution, Exam
 
 class InstitutionRegistrationForm(forms.ModelForm):
+    institution_name = forms.CharField(max_length=255, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Adabiyya High School'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 9947924613'}))
     
@@ -63,4 +64,12 @@ class InstitutionEditForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+class ExamForm(forms.ModelForm):
+    class Meta:
+        model = Exam
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Model Exam 2026'}),
         }
