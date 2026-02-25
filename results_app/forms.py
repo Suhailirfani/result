@@ -4,6 +4,7 @@ from .models import Student, Subject, Result, Institution
 
 class InstitutionRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 9947924613'}))
     
     class Meta:
         model = User

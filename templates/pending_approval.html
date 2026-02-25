@@ -9,7 +9,12 @@
             <hr>
             <p class="mb-0 text-muted">You will be notified or granted access once your account is verified. Thank you for your patience!</p>
         </div>
-        <a href="{% url 'results_app:home' %}" class="btn btn-outline-primary mt-3">Return Home</a>
+        <div class="d-flex justify-content-center gap-3 mt-3">
+            <a href="{% url 'results_app:home' %}" class="btn btn-outline-primary">Return Home</a>
+            <a href="https://wa.me/919947924613?text=Hello,%20I%20have%20registered%20my%20institution%20on%20Nano%20Results%20and%20it%20is%20pending%20approval.%20Please%20verify%20my%20account." target="_blank" class="btn btn-success">
+                Message Admin on WhatsApp
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -16,7 +16,8 @@ def register_institution(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
-            Institution.objects.create(user=user, name=user.username)
+            phone_number = form.cleaned_data.get('phone_number', '')
+            Institution.objects.create(user=user, name=user.username, phone_number=phone_number)
             auth_login(request, user)
             return redirect('results_app:pending_approval')
     else:

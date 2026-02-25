@@ -26,7 +26,10 @@
                             {% for inst in institutions %}
                             <tr>
                                 <td class="align-middle fw-bold">{{ inst.name }}</td>
-                                <td class="align-middle">{{ inst.user.username }} ({{ inst.user.email }})</td>
+                                <td class="align-middle">
+                                    {{ inst.user.username }} ({{ inst.user.email }})<br>
+                                    <small class="text-muted"><i class="bi bi-telephone-fill"></i> {{ inst.phone_number|default:"Not provided" }}</small>
+                                </td>
                                 <td class="align-middle">
                                     {% if inst.is_approved %}
                                         <span class="badge bg-success">Approved</span>
@@ -41,6 +44,11 @@
                                             <button type="submit" class="btn btn-sm btn-outline-danger">Suspend</button>
                                         {% else %}
                                             <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                            {% if inst.phone_number %}
+                                                <a href="https://wa.me/91{{ inst.phone_number }}?text=Hello%20from%20Nano%20Results!%20Your%20institution%20'%{{ inst.name }}'%20has%20been%20approved.%20You%20can%20now%20log%20in%20and%20start%20managing%20results." target="_blank" class="btn btn-sm btn-outline-success ms-1" title="Send WhatsApp Message">
+                                                    WhatsApp
+                                                </a>
+                                            {% endif %}
                                         {% endif %}
                                     </form>
                                 </td>
