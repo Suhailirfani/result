@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Student, Subject, Result, Institution, Exam
-from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm, InstitutionRegistrationForm, StudentForm, SubjectForm, InstitutionEditForm, StudentBulkUploadForm
+from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm, InstitutionRegistrationForm, StudentForm, SubjectForm, InstitutionEditForm, StudentBulkUploadForm, ExamForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.db import models
 from django.db.models import Sum
@@ -530,3 +530,55 @@ def add_exam_view(request):
     else:
         form = ExamForm()
     return render(request, 'add_exam.html', {'form': form, 'title': 'Add Exam'})
+
+@login_required
+def edit_student_marks_view(request, class_num, student_id, exam_id):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    
+    student = get_object_or_404(Student, id=student_id, institution=institution, student_class=class_num)
+    exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+    subjects = Subject.objects.filter(institution=institution, student_class=class_num).order_by('name')
+    
+    # Pre-fetch existing results
+    existing_results = Result.objects.filter(student=student, exam=exam)
+    result_dict = {r.subject_id: r for r in existing_results}
+    
+    if request.method == 'POST':
+        for subject in subjects:
+            mark_value = request.POST.get(f'subject_{subject.id}', '').strip()
+            if mark_value:
+                try:
+                    float_mark = float(mark_value)
+                    Result.objects.update_or_create(
+                        student=student,
+                        subject=subject,
+                        exam=exam,
+                        defaults={'marks': float_mark}
+                    )
+                except ValueError:
+                    messages.error(request, f"Invalid mark entered for {subject.name}")
+                    return redirect('results_app:edit_student_marks', class_num=class_num, student_id=student.id, exam_id=exam.id)
+            else:
+                # If mark is empty, delete it if it exists
+                if subject.id in result_dict:
+                    result_dict[subject.id].delete()
+                    
+        messages.success(request, 'Marks updated successfully.')
+        return redirect(f"/staff/class/{class_num}/?exam={exam.id}")
+        
+    # Prepare data for template
+    subject_marks = []
+    for subject in subjects:
+        mark = ""
+        if subject.id in result_dict:
+            mark = result_dict[subject.id].marks
+        subject_marks.append({'subject': subject, 'mark': mark})
+        
+    return render(request, 'edit_marks.html', {
+        'student': student,
+        'exam': exam,
+        'class_num': class_num,
+        'subject_marks': subject_marks
+    })

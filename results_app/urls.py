@@ -33,4 +33,5 @@ urlpatterns = [
     path('staff/edit-institution/', views.edit_institution_view, name='edit_institution'),
     
     path('staff/add-exam/', views.add_exam_view, name='add_exam'),
+    path('staff/class/<int:class_num>/edit-marks/<int:student_id>/<int:exam_id>/', views.edit_student_marks_view, name='edit_student_marks'),
 ]

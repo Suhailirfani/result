@@ -30,6 +30,7 @@
                             <th>{{ sub.name }}</th>
                         {% endfor %}
                         <th>Total</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,6 +43,13 @@
                             <td>{{ mark }}</td>
                         {% endfor %}
                         <td><span class="badge bg-primary fs-6">{{ row.total }}</span></td>
+                        <td>
+                            {% if selected_exam %}
+                            <a href="{% url 'results_app:edit_student_marks' class_num row.student.id selected_exam.id %}" class="btn btn-sm btn-outline-primary" title="Edit Marks"><i class="bi bi-pencil-square"></i> Edit</a>
+                            {% else %}
+                            <span class="text-muted small">Select an exam</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
