@@ -2,10 +2,17 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Institution(models.Model):
+    GRADING_CHOICES = [
+        ('10_POINT', '10-Point Scale (CBSE Style)'),
+        ('9_POINT', '9-Point Scale (State Board Style)'),
+        ('SUNNI_BOARD', 'Sunni Vidyabhyasa Board'),
+        ('PERCENTAGE', 'Standard Percentage Only'),
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='institution')
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
+    grading_system = models.CharField(max_length=20, choices=GRADING_CHOICES, default='PERCENTAGE')
 
     def __str__(self):
         return f"{self.name} ({'Approved' if self.is_approved else 'Pending'})"
@@ -58,3 +65,4 @@ class Result(models.Model):
     def __str__(self):
         exam_name = self.exam.name if self.exam else "Unassigned"
         return f"{self.student.name} - {self.subject.name} ({exam_name}): {self.marks}"
+

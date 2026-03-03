@@ -18,7 +18,8 @@ def register_institution(request):
             user.save()
             phone_number = form.cleaned_data.get('phone_number', '')
             institution_name = form.cleaned_data.get('institution_name', user.username)
-            Institution.objects.create(user=user, name=institution_name, phone_number=phone_number)
+            grading_system = form.cleaned_data.get('grading_system', 'PERCENTAGE')
+            Institution.objects.create(user=user, name=institution_name, phone_number=phone_number, grading_system=grading_system)
             auth_login(request, user)
             return redirect('results_app:pending_approval')
     else:
@@ -88,10 +89,10 @@ def student_result_view(request, inst_id):
             for r in results:
                 exam_name = r.exam.name if r.exam else "General Exam"
                 if exam_name not in results_by_exam:
-                    results_by_exam[exam_name] = {'marks': [], 'total': 0}
+                    results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0}
                 results_by_exam[exam_name]['marks'].append(r)
                 results_by_exam[exam_name]['total'] += r.marks
-                
+                results_by_exam[exam_name]['max_total'] += 100
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
     return render(request, 'student_result.html', {'form': form, 'results_by_exam': results_by_exam, 'student': student, 'institution': institution})
@@ -131,6 +132,7 @@ def class_result_view(request, class_num):
         students = Student.objects.none()
         
     subjects = Subject.objects.filter(institution=institution, student_class=class_num)
+    max_total = subjects.count() * 100
     # Organize data for table
     data = []
     for s in students:
@@ -141,7 +143,7 @@ def class_result_view(request, class_num):
         for sub in subjects:
             marks_list.append(res_dict.get(sub.name, "-"))
             
-        data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0})
+        data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0, 'max_total': max_total})
     return render(request, 'class_result.html', {'class_num': class_num, 'data': data, 'subjects': subjects, 'exams': exams, 'selected_exam': selected_exam})
 
 @login_required
@@ -581,4 +583,78 @@ def edit_student_marks_view(request, class_num, student_id, exam_id):
         'exam': exam,
         'class_num': class_num,
         'subject_marks': subject_marks
+    })
+
+@login_required
+def enter_marks_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+    subjects = Subject.objects.filter(institution=institution, student_class=class_num).order_by('name')
+    
+    exam_id = request.GET.get('exam')
+    subject_id = request.GET.get('subject')
+    
+    selected_exam = None
+    selected_subject = None
+    student_data = []
+
+    if exam_id and subject_id:
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+        selected_subject = get_object_or_404(Subject, id=subject_id, institution=institution, student_class=class_num)
+        
+        students = Student.objects.filter(institution=institution, student_class=class_num).order_by('name')
+        from django.db.models import Prefetch
+        # Prefetch existing results for this specific exam and subject
+        students = students.prefetch_related(
+            Prefetch('results', queryset=Result.objects.filter(exam=selected_exam, subject=selected_subject), to_attr='current_results')
+        )
+        
+        for student in students:
+            existing_mark = ''
+            if student.current_results:
+                existing_mark = student.current_results[0].marks
+            student_data.append({
+                'student': student,
+                'existing_mark': existing_mark
+            })
+            
+    if request.method == 'POST' and selected_exam and selected_subject:
+        for student_info in student_data:
+            student = student_info['student']
+            mark_value = request.POST.get(f'mark_{student.id}', '').strip()
+            
+            if mark_value:
+                try:
+                    float_mark = float(mark_value)
+                    Result.objects.update_or_create(
+                        student=student,
+                        subject=selected_subject,
+                        exam=selected_exam,
+                        defaults={'marks': float_mark}
+                    )
+                except ValueError:
+                    messages.error(request, f"Invalid mark entered for {student.name}")
+                    continue
+            else:
+                # If mark is cleared, delete the existing record for this student
+                Result.objects.filter(
+                    student=student,
+                    subject=selected_subject,
+                    exam=selected_exam
+                ).delete()
+                
+        messages.success(request, 'Marks successfully saved/updated!')
+        # Post/Redirect/Get pattern
+        return redirect(f"{request.path}?exam={selected_exam.id}&subject={selected_subject.id}")
+
+    return render(request, 'enter_marks.html', {
+        'class_num': class_num,
+        'exams': exams,
+        'subjects': subjects,
+        'selected_exam': selected_exam,
+        'selected_subject': selected_subject,
+        'student_data': student_data
     })

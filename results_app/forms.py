@@ -6,6 +6,7 @@ class InstitutionRegistrationForm(forms.ModelForm):
     institution_name = forms.CharField(max_length=255, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Adabiyya High School'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 9947924613'}))
+    grading_system = forms.ChoiceField(choices=Institution.GRADING_CHOICES, required=True, widget=forms.Select(attrs={'class': 'form-control'}))
     
     class Meta:
         model = User
@@ -60,10 +61,11 @@ class SubjectForm(forms.ModelForm):
 class InstitutionEditForm(forms.ModelForm):
     class Meta:
         model = Institution
-        fields = ['name', 'phone_number']
+        fields = ['name', 'phone_number', 'grading_system']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'grading_system': forms.Select(attrs={'class': 'form-control'}),
         }
 
 class ExamForm(forms.ModelForm):

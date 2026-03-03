@@ -1,19 +1,47 @@
 {% extends 'base.html' %}
-
+{% load grade_tags %}
 {% block content %}
+<style>
+@media print {
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .navbar, nav, footer, .d-print-none {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .table-responsive {
+        overflow-x: visible !important;
+    }
+    th.actions-col, td.actions-col {
+        display: none !important;
+    }
+}
+</style>
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
     <h2 class="mb-0">Class {{ class_num }} Results</h2>
     <div class="d-flex flex-column flex-sm-row gap-2">
         {% if exams %}
         <form method="GET" class="d-flex align-items-center">
-            <select name="exam" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+            <select name="exam" class="form-select form-select-sm me-2 d-print-none" onchange="this.form.submit()">
                 {% for exam in exams %}
                     <option value="{{ exam.id }}" {% if selected_exam and selected_exam.id == exam.id %}selected{% endif %}>{{ exam.name }}</option>
                 {% endfor %}
             </select>
         </form>
         {% endif %}
-        <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary w-100 w-sm-auto">Back to Dashboard</a>
+        <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary w-100 w-sm-auto d-print-none">Back to Dashboard</a>
+        <button onclick="window.print()" class="btn btn-secondary w-100 w-sm-auto d-print-none"><i class="bi bi-printer"></i> Print</button>
     </div>
 </div>
 
@@ -30,7 +58,7 @@
                             <th>{{ sub.name }}</th>
                         {% endfor %}
                         <th>Total</th>
-                        <th>Actions</th>
+                        <th class="actions-col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,10 +68,20 @@
                         <td>{{ row.student.name }}</td>
                         <td>{{ row.student.division|default_if_none:"-" }}</td>
                         {% for mark in row.marks %}
-                            <td>{{ mark }}</td>
+                            <td>
+                                {{ mark|clean_mark }}
+                                {% if request.user.institution.grading_system != 'PERCENTAGE' and mark != '-' %}
+                                    <span class="badge bg-info ms-1">{% get_grade mark request.user.institution.grading_system %}</span>
+                                {% endif %}
+                            </td>
                         {% endfor %}
-                        <td><span class="badge bg-primary fs-6">{{ row.total }}</span></td>
                         <td>
+                            <span class="badge bg-primary fs-6">{{ row.total|clean_mark }}</span>
+                            {% if request.user.institution.grading_system == 'SUNNI_BOARD' and row.max_total > 0 %}
+                                <br><span class="badge bg-warning text-dark mt-1">{% get_grade_name row.total request.user.institution.grading_system max_marks=row.max_total is_total=True %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions-col">
                             {% if selected_exam %}
                             <a href="{% url 'results_app:edit_student_marks' class_num row.student.id selected_exam.id %}" class="btn btn-sm btn-outline-primary" title="Edit Marks"><i class="bi bi-pencil-square"></i> Edit</a>
                             {% else %}
