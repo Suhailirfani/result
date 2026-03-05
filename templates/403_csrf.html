@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-1 text-danger"><i class="bi bi-shield-lock"></i></h1>
+            <h2 class="mb-4">Session Expired / Security Verification Failed</h2>
+            <p class="lead">
+                Sorry, your request could not be completed securely.
+            </p>
+            <div class="alert alert-warning text-start mt-4">
+                <h5><i class="bi bi-info-circle"></i> How to fix this:</h5>
+                <ul class="mb-0">
+                    <li>Your session might have timed out. Please try <strong>refreshing the page</strong> and submitting the form again.</li>
+                    <li>Make sure your browser is set to <strong>accept cookies</strong>.</li>
+                    <li>If you kept the page open for a long time without activity, please <a href="{% url 'results_app:login' %}">login again</a>.</li>
+                </ul>
+            </div>
+            
+            <a href="javascript:history.back()" class="btn btn-primary mt-3"><i class="bi bi-arrow-left"></i> Go Back and Try Again</a>
+            <a href="{% url 'results_app:home' %}" class="btn btn-outline-secondary mt-3 ms-2">Go to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

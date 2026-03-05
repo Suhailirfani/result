@@ -11,6 +11,9 @@ urlpatterns = [
     path('pending-approval/', views.pending_approval_view, name='pending_approval'),
     path('admin-dashboard/', views.superadmin_dashboard_view, name='superadmin_dashboard'),
     path('admin-dashboard/approve/<int:inst_id>/', views.approve_institution_view, name='approve_institution'),
+    path('admin-dashboard/reject/<int:inst_id>/', views.reject_institution_view, name='reject_institution'),
+    path('admin-dashboard/suspend/<int:inst_id>/', views.suspend_institution_view, name='suspend_institution'),
+    path('admin-dashboard/delete/<int:inst_id>/', views.delete_institution_view, name='delete_institution'),
     path('institution/<int:inst_id>/results/', views.student_result_view, name='student_result'),
     path('staff/dashboard/', views.staff_dashboard_view, name='staff_dashboard'),
     path('staff/class/<int:class_num>/', views.class_result_view, name='class_result'),
@@ -35,4 +38,6 @@ urlpatterns = [
     path('staff/add-exam/', views.add_exam_view, name='add_exam'),
     path('staff/class/<int:class_num>/edit-marks/<int:student_id>/<int:exam_id>/', views.edit_student_marks_view, name='edit_student_marks'),
     path('staff/class/<int:class_num>/enter-marks/', views.enter_marks_view, name='enter_marks'),
+    path('staff/class/<int:class_num>/pass-fail/', views.manage_pass_fail_view, name='manage_pass_fail'),
+    path('staff/class/<int:class_num>/pass-fail-results/', views.class_result_pass_fail_view, name='class_result_pass_fail'),
 ]

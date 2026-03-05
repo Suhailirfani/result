@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Student, Subject, Result, Institution, Exam
 from .forms import StudentSearchForm, SingleUploadForm, BulkUploadForm, InstitutionRegistrationForm, StudentForm, SubjectForm, InstitutionEditForm, StudentBulkUploadForm, ExamForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import Sum
 from django.contrib.auth.forms import AuthenticationForm
 import pandas as pd
@@ -57,17 +57,58 @@ def logout_view(request):
 def superadmin_dashboard_view(request):
     if not request.user.is_superuser:
         return redirect('results_app:home')
-    institutions = Institution.objects.all().order_by('is_approved', 'name')
-    return render(request, 'superadmin_dashboard.html', {'institutions': institutions})
+        
+    pending_institutions = Institution.objects.filter(is_approved=False, is_rejected=False).order_by('name')
+    approved_institutions = Institution.objects.filter(is_approved=True, is_rejected=False).order_by('name')
+    rejected_institutions = Institution.objects.filter(is_rejected=True).order_by('name')
+    
+    return render(request, 'superadmin_dashboard.html', {
+        'pending_institutions': pending_institutions,
+        'approved_institutions': approved_institutions,
+        'rejected_institutions': rejected_institutions
+    })
 
 @login_required
 def approve_institution_view(request, inst_id):
     if not request.user.is_superuser:
         return redirect('results_app:home')
     inst = get_object_or_404(Institution, id=inst_id)
-    inst.is_approved = not inst.is_approved
+    inst.is_approved = True
+    inst.is_rejected = False
     inst.save()
-    messages.success(request, f"Institution '{inst.name}' approval status updated.")
+    messages.success(request, f"Institution '{inst.name}' has been approved.")
+    return redirect('results_app:superadmin_dashboard')
+
+@login_required
+def reject_institution_view(request, inst_id):
+    if not request.user.is_superuser:
+        return redirect('results_app:home')
+    inst = get_object_or_404(Institution, id=inst_id)
+    inst.is_approved = False
+    inst.is_rejected = True
+    inst.save()
+    messages.warning(request, f"Institution '{inst.name}' has been rejected.")
+    return redirect('results_app:superadmin_dashboard')
+
+@login_required
+def suspend_institution_view(request, inst_id):
+    if not request.user.is_superuser:
+        return redirect('results_app:home')
+    inst = get_object_or_404(Institution, id=inst_id)
+    inst.is_approved = False
+    inst.is_rejected = False
+    inst.save()
+    messages.warning(request, f"Institution '{inst.name}' has been suspended.")
+    return redirect('results_app:superadmin_dashboard')
+
+@login_required
+def delete_institution_view(request, inst_id):
+    if not request.user.is_superuser:
+        return redirect('results_app:home')
+    inst = get_object_or_404(Institution, id=inst_id)
+    name = inst.name
+    inst.user.delete() # Cascade deletes the Institution
+    messages.success(request, f"Institution '{name}' has been removed from the system.")
     return redirect('results_app:superadmin_dashboard')
 
 def student_result_view(request, inst_id):
@@ -84,15 +125,22 @@ def student_result_view(request, inst_id):
         register_number = form.cleaned_data['register_number']
         try:
             student = Student.objects.get(institution=institution, register_number=register_number)
-            results = student.results.select_related('exam', 'subject').all()
             
-            for r in results:
-                exam_name = r.exam.name if r.exam else "General Exam"
-                if exam_name not in results_by_exam:
-                    results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0}
-                results_by_exam[exam_name]['marks'].append(r)
-                results_by_exam[exam_name]['total'] += r.marks
-                results_by_exam[exam_name]['max_total'] += 100
+            if institution.grading_system == 'PASS_FAIL':
+                from .models import PassFailResult
+                results = PassFailResult.objects.filter(student=student).select_related('exam')
+                for r in results:
+                    exam_name = r.exam.name if r.exam else "General Exam"
+                    results_by_exam[exam_name] = {'is_passed': r.is_passed}
+            else:
+                results = student.results.select_related('exam', 'subject').all()
+                for r in results:
+                    exam_name = r.exam.name if r.exam else "General Exam"
+                    if exam_name not in results_by_exam:
+                        results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0}
+                    results_by_exam[exam_name]['marks'].append(r)
+                    results_by_exam[exam_name]['total'] += r.marks
+                    results_by_exam[exam_name]['max_total'] += 100
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
     return render(request, 'student_result.html', {'form': form, 'results_by_exam': results_by_exam, 'student': student, 'institution': institution})
@@ -341,9 +389,12 @@ def add_student_view(request):
         if form.is_valid():
             student = form.save(commit=False)
             student.institution = institution
-            student.save()
-            messages.success(request, 'Student added successfully.')
-            return redirect('results_app:manage_students', class_num=student.student_class)
+            try:
+                student.save()
+                messages.success(request, 'Student added successfully.')
+                return redirect('results_app:manage_students', class_num=student.student_class)
+            except IntegrityError:
+                messages.error(request, 'A student with this Register Number already exists in your institution. Please use a different Register Number.')
     else:
         form = StudentForm()
     return render(request, 'add_student.html', {'form': form, 'title': 'Add Student'})
@@ -357,9 +408,12 @@ def edit_student_view(request, student_id):
     if request.method == 'POST':
         form = StudentForm(request.POST, instance=student)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Student updated successfully.')
-            return redirect('results_app:manage_students', class_num=student.student_class)
+            try:
+                form.save()
+                messages.success(request, 'Student updated successfully.')
+                return redirect('results_app:manage_students', class_num=student.student_class)
+            except IntegrityError:
+                messages.error(request, 'Another student with this Register Number already exists in your institution. Please use a different Register Number.')
     else:
         form = StudentForm(instance=student)
     return render(request, 'add_student.html', {'form': form, 'title': 'Edit Student'})
@@ -658,3 +712,114 @@ def enter_marks_view(request, class_num):
         'selected_subject': selected_subject,
         'student_data': student_data
     })
+
+@login_required
+def manage_pass_fail_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    
+    if institution.grading_system != 'PASS_FAIL':
+        messages.error(request, "This institution does not use Pass/Fail grading.")
+        return redirect('results_app:staff_dashboard')
+        
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+    exam_id = request.GET.get('exam')
+    selected_exam = None
+    student_data = []
+
+    if exam_id:
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+        students = Student.objects.filter(institution=institution, student_class=class_num).order_by('name')
+        
+        from django.db.models import Prefetch
+        from .models import PassFailResult
+        students = students.prefetch_related(
+            Prefetch('pass_fail_results', queryset=PassFailResult.objects.filter(exam=selected_exam), to_attr='current_pf_results')
+        )
+        
+        for student in students:
+            status = ''
+            if student.current_pf_results:
+                status = 'passed' if student.current_pf_results[0].is_passed else 'failed'
+            student_data.append({
+                'student': student,
+                'status': status
+            })
+            
+    if request.method == 'POST' and selected_exam:
+        from .models import PassFailResult
+        for student_info in student_data:
+            student = student_info['student']
+            status_val = request.POST.get(f'status_{student.id}')
+            
+            if status_val in ['passed', 'failed']:
+                is_passed = (status_val == 'passed')
+                PassFailResult.objects.update_or_create(
+                    student=student,
+                    exam=selected_exam,
+                    defaults={'is_passed': is_passed}
+                )
+            else:
+                PassFailResult.objects.filter(
+                    student=student,
+                    exam=selected_exam
+                ).delete()
+                
+        messages.success(request, 'Pass/Fail results successfully saved/updated!')
+        return redirect(f"{request.path}?exam={selected_exam.id}")
+
+    return render(request, 'manage_pass_fail.html', {
+        'class_num': class_num,
+        'exams': exams,
+        'selected_exam': selected_exam,
+        'student_data': student_data
+    })
+
+@login_required
+def class_result_pass_fail_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    if institution.grading_system != 'PASS_FAIL':
+        messages.error(request, "This institution does not use Pass/Fail grading.")
+        return redirect('results_app:staff_dashboard')
+        
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+    exam_id = request.GET.get('exam')
+    selected_exam = None
+    
+    if exam_id:
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+    elif exams.exists():
+        selected_exam = exams.first()
+        
+    student_data = []
+    if selected_exam:
+        students = Student.objects.filter(institution=institution, student_class=class_num).order_by('name')
+        from django.db.models import Prefetch
+        from .models import PassFailResult
+        students = students.prefetch_related(
+            Prefetch('pass_fail_results', queryset=PassFailResult.objects.filter(exam=selected_exam), to_attr='current_pf_results')
+        )
+        
+        for student in students:
+            status = 'Not Entered'
+            if student.current_pf_results:
+                status = 'Passed' if student.current_pf_results[0].is_passed else 'Failed'
+                
+            student_data.append({
+                'student': student,
+                'status': status
+            })
+            
+    return render(request, 'class_result_pass_fail.html', {
+        'class_num': class_num,
+        'student_data': student_data,
+        'exams': exams,
+        'selected_exam': selected_exam
+    })
+
+def custom_csrf_failure(request, reason=""):
+    return render(request, '403_csrf.html', {'reason': reason}, status=403)

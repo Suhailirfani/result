@@ -73,6 +73,15 @@
                     <div class="bg-light px-3 py-2 border-bottom border-top mt-{% if not forloop.first %}4{% else %}0{% endif %}">
                         <h5 class="mb-0 text-primary fw-bold text-center py-1">{{ exam_name }}</h5>
                     </div>
+                    {% if institution.grading_system == 'PASS_FAIL' %}
+                        <div class="p-5 text-center">
+                            {% if exam_data.is_passed %}
+                                <h1 class="text-success fw-bold display-4"><i class="bi bi-check-circle-fill mb-3 d-block display-1"></i> PASSED</h1>
+                            {% else %}
+                                <h1 class="text-danger fw-bold display-4"><i class="bi bi-x-circle-fill mb-3 d-block display-1"></i> FAILED</h1>
+                            {% endif %}
+                        </div>
+                    {% else %}
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
@@ -111,6 +120,7 @@
                         </tfoot>
                     </table>
                     </div>
+                    {% endif %}
                     {% endfor %}
                 {% else %}
                     <div class="p-4 text-center text-muted">No results found for this student.</div>

@@ -7,11 +7,13 @@ class Institution(models.Model):
         ('9_POINT', '9-Point Scale (State Board Style)'),
         ('SUNNI_BOARD', 'Sunni Vidyabhyasa Board'),
         ('PERCENTAGE', 'Standard Percentage Only'),
+        ('PASS_FAIL', 'Pass / Fail Only'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='institution')
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
     grading_system = models.CharField(max_length=20, choices=GRADING_CHOICES, default='PERCENTAGE')
 
     def __str__(self):
@@ -65,4 +67,17 @@ class Result(models.Model):
     def __str__(self):
         exam_name = self.exam.name if self.exam else "Unassigned"
         return f"{self.student.name} - {self.subject.name} ({exam_name}): {self.marks}"
+
+class PassFailResult(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='pass_fail_results')
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='pass_fail_results', null=True)
+    is_passed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('student', 'exam')
+
+    def __str__(self):
+        exam_name = self.exam.name if self.exam else "Unassigned"
+        status = "Passed" if self.is_passed else "Failed"
+        return f"{self.student.name} ({exam_name}): {status}"
 

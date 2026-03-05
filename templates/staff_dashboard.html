@@ -76,22 +76,29 @@ function copyToClipboard() {
                                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-2">
                                     <span class="fw-bold fs-5">Class {{ c }}</span>
                                     <div class="d-flex flex-column flex-sm-row gap-2">
-                                        <a href="{% url 'results_app:class_result' c %}" class="btn btn-sm btn-outline-primary">View Results</a>
-                                        <a href="{% url 'results_app:enter_marks' c %}" class="btn btn-sm btn-outline-success">Enter Marks</a>
-                                        <a href="{% url 'results_app:rank_list' c %}" class="btn btn-sm btn-outline-info">Rank List</a>
-                                        <a href="{% url 'results_app:toppers' c %}" class="btn btn-sm btn-outline-warning">Toppers</a>
+                                        {% if institution.grading_system == 'PASS_FAIL' %}
+                                            <a href="{% url 'results_app:class_result_pass_fail' c %}" class="btn btn-sm btn-outline-primary">View Results</a>
+                                            <a href="{% url 'results_app:manage_pass_fail' c %}" class="btn btn-sm btn-outline-success">Manage Pass/Fail</a>
+                                        {% else %}
+                                            <a href="{% url 'results_app:class_result' c %}" class="btn btn-sm btn-outline-primary">View Results</a>
+                                            <a href="{% url 'results_app:enter_marks' c %}" class="btn btn-sm btn-outline-success">Enter Marks</a>
+                                            <a href="{% url 'results_app:rank_list' c %}" class="btn btn-sm btn-outline-info">Rank List</a>
+                                            <a href="{% url 'results_app:toppers' c %}" class="btn btn-sm btn-outline-warning">Toppers</a>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <a href="{% url 'results_app:manage_students' c %}" class="text-decoration-none small text-success">Manage Students</a>
-                                    <span class="text-muted small">|</span>
-                                    <a href="{% url 'results_app:manage_subjects' c %}" class="text-decoration-none small text-primary">Manage Subjects</a>
+                                    {% if institution.grading_system != 'PASS_FAIL' %}
+                                        <span class="text-muted small">|</span>
+                                        <a href="{% url 'results_app:manage_subjects' c %}" class="text-decoration-none small text-primary">Manage Subjects</a>
+                                    {% endif %}
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted mb-0">No class data available yet. Please upload some results.</p>
+                    <p class="text-muted mb-0">No class data available yet. Please add students first.</p>
                 {% endif %}
             </div>
         </div>

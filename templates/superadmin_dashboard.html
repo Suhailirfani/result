@@ -5,11 +5,106 @@
     <h2 class="mb-0">Superadmin Dashboard</h2>
 </div>
 
+<div class="row g-4 mb-4">
+    <!-- Left Column: Pending Applications -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 border-warning">
+            <div class="card-header bg-warning bg-opacity-10">
+                <h5 class="mb-0 text-warning-emphasis"><i class="bi bi-hourglass-split me-2"></i>Pending Applications</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Institution</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inst in pending_institutions %}
+                            <tr>
+                                <td class="align-middle">
+                                    <div class="fw-bold">{{ inst.name }}</div>
+                                    <div class="small text-muted">{{ inst.user.username }} | {{ inst.user.email }}</div>
+                                    {% if inst.phone_number %}<div class="small text-muted"><i class="bi bi-telephone"></i> {{ inst.phone_number }}</div>{% endif %}
+                                </td>
+                                <td class="align-middle text-end">
+                                    <form method="POST" action="{% url 'results_app:approve_institution' inst.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success mb-1">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'results_app:reject_institution' inst.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger mb-1">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-4">No pending applications.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Approved Institutions -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100 border-success">
+            <div class="card-header bg-success bg-opacity-10">
+                <h5 class="mb-0 text-success-emphasis"><i class="bi bi-check-circle me-2"></i>Approved Institutions</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Institution</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inst in approved_institutions %}
+                            <tr>
+                                <td class="align-middle">
+                                    <div class="fw-bold">{{ inst.name }}</div>
+                                    <div class="small text-muted">{{ inst.user.username }}</div>
+                                </td>
+                                <td class="align-middle text-end">
+                                    <form method="POST" action="{% url 'results_app:suspend_institution' inst.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-warning mb-1" title="Suspend this account">Suspend</button>
+                                    </form>
+                                    {% if inst.phone_number %}
+                                        <a href="https://wa.me/91{{ inst.phone_number }}?text=Hello%20from%20Nano%20Results!%20Your%20institution%20'{{ inst.name }}'%20has%20been%20approved.%20You%20can%20now%20log%20in%20and%20start%20managing%20results." target="_blank" class="btn btn-sm btn-outline-success ms-1 mb-1" title="Send WhatsApp Message">
+                                            <i class="bi bi-whatsapp"></i> WhatsApp
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-4">No approved institutions yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
+    <!-- Full Width: Rejected Applications -->
     <div class="col-md-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Manage Institutions</h5>
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-x-circle me-2"></i>Rejected Applications</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -17,45 +112,32 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Institution Name</th>
-                                <th>Admin User</th>
-                                <th>Status</th>
+                                <th>Admin Details</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for inst in institutions %}
+                            {% for inst in rejected_institutions %}
                             <tr>
                                 <td class="align-middle fw-bold">{{ inst.name }}</td>
                                 <td class="align-middle">
                                     {{ inst.user.username }} ({{ inst.user.email }})<br>
                                     <small class="text-muted"><i class="bi bi-telephone-fill"></i> {{ inst.phone_number|default:"Not provided" }}</small>
                                 </td>
-                                <td class="align-middle">
-                                    {% if inst.is_approved %}
-                                        <span class="badge bg-success">Approved</span>
-                                    {% else %}
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                    {% endif %}
-                                </td>
                                 <td class="align-middle text-end">
                                     <form method="POST" action="{% url 'results_app:approve_institution' inst.id %}" class="d-inline">
                                         {% csrf_token %}
-                                        {% if inst.is_approved %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Suspend</button>
-                                        {% else %}
-                                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
-                                            {% if inst.phone_number %}
-                                                <a href="https://wa.me/91{{ inst.phone_number }}?text=Hello%20from%20Nano%20Results!%20Your%20institution%20'%{{ inst.name }}'%20has%20been%20approved.%20You%20can%20now%20log%20in%20and%20start%20managing%20results." target="_blank" class="btn btn-sm btn-outline-success ms-1" title="Send WhatsApp Message">
-                                                    WhatsApp
-                                                </a>
-                                            {% endif %}
-                                        {% endif %}
+                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'results_app:delete_institution' inst.id %}" class="d-inline ms-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to permanently delete this application?');">Remove</button>
                                     </form>
                                 </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-4">No institutions registered yet.</td>
+                                <td colspan="3" class="text-center text-muted py-4">No rejected applications.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

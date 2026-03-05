@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Class {{ class_num }} Results</h2>
+    <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+</div>
+
+<div class="card shadow-sm border-primary mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Pass/Fail Results</h5>
+        <button onclick="window.print()" class="btn btn-sm btn-light d-print-none"><i class="bi bi-printer"></i> Print</button>
+    </div>
+    <div class="card-body">
+        
+        <form method="GET" class="row g-3 align-items-end mb-4 d-print-none">
+            <div class="col-md-8">
+                <label for="exam" class="form-label fw-bold">Select Exam to View Results:</label>
+                <select name="exam" id="exam" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Choose Exam --</option>
+                    {% for exam in exams %}
+                        <option value="{{ exam.id }}" {% if selected_exam and selected_exam.id == exam.id %}selected{% endif %}>{{ exam.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if selected_exam %}
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'results_app:manage_pass_fail' class_num %}?exam={{ selected_exam.id }}" class="btn btn-outline-success">
+                        <i class="bi bi-pencil-square"></i> Edit Results
+                    </a>
+                </div>
+            {% endif %}
+        </form>
+
+        {% if selected_exam %}
+            <h4 class="text-center mb-4 mt-2 print-show d-none">Exam: {{ selected_exam.name }}</h4>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Student Name</th>
+                            <th>Reg. Number</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in student_data %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-bold">{{ data.student.name }}</td>
+                            <td>{{ data.student.register_number }}</td>
+                            <td class="text-center">
+                                {% if data.status == 'Passed' %}
+                                    <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i> PASSED</span>
+                                {% elif data.status == 'Failed' %}
+                                    <span class="badge bg-danger fs-6"><i class="bi bi-x-circle me-1"></i> FAILED</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Entered</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No students found in this class.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center">
+                Please select an exam from the dropdown above to view results.
+            </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+<style>
+@media print {
+    .d-print-none, nav, footer {
+        display: none !important;
+    }
+    .print-show {
+        display: block !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .badge {
+        color: black !important;
+        background-color: transparent !important;
+        border: 1px solid black;
+    }
+    .badge.bg-success { border-color: green; color: green !important; }
+    .badge.bg-danger { border-color: red; color: red !important; }
+}
+</style>
+{% endblock %}

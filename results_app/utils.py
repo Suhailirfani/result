@@ -31,11 +31,11 @@ def calculate_grade(marks, max_marks, grading_system, is_total=False):
         
     elif grading_system == 'SUNNI_BOARD':
         if is_total:
-            if percentage >= 100: return ('Top', 'ടോപ്പിസ്റ്റ്')
-            elif percentage >= 96: return ('Topper', 'ടോപ്പർ')
-            elif percentage >= 80: return ('Distinction', 'ഡിസ്റ്റിങ്ഷൻ')
-            elif percentage >= 40: return ('Pass', 'പാസായി')
-            else: return ('Fail', 'പരാജയം')
+            if percentage >= 100: return ('Top', 'Top')
+            elif percentage >= 96: return ('Topper', 'Topper')
+            elif percentage >= 80: return ('Distinction', 'Distinction')
+            elif percentage >= 40: return ('Pass', 'Pass')
+            else: return ('Fail', 'Fail')
         else:
             if percentage >= 96: return ('A++', '')
             elif percentage >= 91: return ('A+', '')
