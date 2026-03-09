@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    body {
+        text-transform: uppercase !important;
+    }
+</style>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Class {{ class_num }} Results</h2>
     <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
