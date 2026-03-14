@@ -137,10 +137,13 @@ def student_result_view(request, inst_id):
                 for r in results:
                     exam_name = r.exam.name if r.exam else "General Exam"
                     if exam_name not in results_by_exam:
-                        results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0}
+                        results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0, 'has_failed_subject': False}
                     results_by_exam[exam_name]['marks'].append(r)
                     results_by_exam[exam_name]['total'] += r.marks
                     results_by_exam[exam_name]['max_total'] += 100
+                    
+                    if institution.grading_system == 'SUNNI_BOARD' and r.marks < 40:
+                        results_by_exam[exam_name]['has_failed_subject'] = True
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
     return render(request, 'student_result.html', {'form': form, 'results_by_exam': results_by_exam, 'student': student, 'institution': institution})
@@ -187,11 +190,15 @@ def class_result_view(request, class_num):
         student_results = Result.objects.filter(student=s, exam=selected_exam)
         res_dict = {r.subject.name: r.marks for r in student_results}
         
+        has_failed_subject = False
         marks_list = []
         for sub in subjects:
-            marks_list.append(res_dict.get(sub.name, "-"))
+            mark = res_dict.get(sub.name, "-")
+            marks_list.append(mark)
+            if institution.grading_system == 'SUNNI_BOARD' and mark != "-" and mark < 40:
+                has_failed_subject = True
             
-        data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0, 'max_total': max_total})
+        data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0, 'max_total': max_total, 'has_failed_subject': has_failed_subject})
     return render(request, 'class_result.html', {'class_num': class_num, 'data': data, 'subjects': subjects, 'exams': exams, 'selected_exam': selected_exam})
 
 @login_required
@@ -214,6 +221,9 @@ def toppers_view(request, class_num):
         students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
             total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
         ).order_by('-total_marks')
+        
+        if institution.grading_system == 'SUNNI_BOARD':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
     else:
         students = Student.objects.none()
         
@@ -241,6 +251,9 @@ def rank_list_view(request, class_num):
         students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
             total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
         ).order_by('-total_marks')
+        
+        if institution.grading_system == 'SUNNI_BOARD':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
     else:
         students = Student.objects.none()
         

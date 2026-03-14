@@ -100,7 +100,11 @@
                                 <td>
                                     <span class="badge bg-success fs-6">{{ r.marks|clean_mark }}</span>
                                     {% if institution.grading_system != 'PERCENTAGE' %}
-                                        <span class="badge bg-info fs-6 ms-2">{% get_grade r.marks institution.grading_system %}</span>
+                                        {% if r.marks < 40 %}
+                                            <span class="badge bg-danger fs-6 ms-2">{% get_grade r.marks institution.grading_system %}</span>
+                                        {% else %}
+                                            <span class="badge bg-info fs-6 ms-2">{% get_grade r.marks institution.grading_system %}</span>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
@@ -116,7 +120,11 @@
                                 <th>
                                     <span class="badge bg-primary fs-5">{{ exam_data.total|clean_mark }}</span>
                                     {% if institution.grading_system == 'SUNNI_BOARD' %}
-                                        <span class="badge bg-warning text-dark fs-6 ms-2">{% get_grade_name exam_data.total institution.grading_system max_marks=exam_data.max_total is_total=True %}</span>
+                                        {% if exam_data.has_failed_subject %}
+                                            <span class="badge bg-danger fs-6 ms-2">FAILED</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark fs-6 ms-2">{% get_grade_name exam_data.total institution.grading_system max_marks=exam_data.max_total is_total=True %}</span>
+                                        {% endif %}
                                     {% endif %}
                                 </th>
                             </tr>

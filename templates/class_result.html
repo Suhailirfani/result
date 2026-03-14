@@ -74,14 +74,23 @@
                             <td>
                                 {{ mark|clean_mark }}
                                 {% if request.user.institution.grading_system != 'PERCENTAGE' and mark != '-' %}
-                                    <span class="badge bg-info ms-1">{% get_grade mark request.user.institution.grading_system %}</span>
+                                    {% if mark < 40 %}
+                                        <span class="badge bg-danger ms-1">{% get_grade mark request.user.institution.grading_system %}</span>
+                                    {% else %}
+                                        <span class="badge bg-info ms-1">{% get_grade mark request.user.institution.grading_system %}</span>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                         {% endfor %}
                         <td>
                             <span class="badge bg-primary fs-6">{{ row.total|clean_mark }}</span>
                             {% if request.user.institution.grading_system == 'SUNNI_BOARD' and row.max_total > 0 %}
-                                <br><span class="badge bg-warning text-dark mt-1">{% get_grade_name row.total request.user.institution.grading_system max_marks=row.max_total is_total=True %}</span>
+                                <br>
+                                {% if row.has_failed_subject %}
+                                    <span class="badge bg-danger mt-1">FAILED</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark mt-1">{% get_grade_name row.total request.user.institution.grading_system max_marks=row.max_total is_total=True %}</span>
+                                {% endif %}
                             {% endif %}
                         </td>
                         <td class="actions-col">

@@ -44,7 +44,7 @@ def calculate_grade(marks, max_marks, grading_system, is_total=False):
             elif percentage >= 61: return ('B', '')
             elif percentage >= 51: return ('C+', '')
             elif percentage >= 40: return ('C', '')
-            else: return ('Failed', '')
+            else: return ('D', '')
             
     else: # PERCENTAGE or undefined
         if percentage >= 33:
