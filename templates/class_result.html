@@ -58,7 +58,7 @@
                         <th>Name</th>
                         <th>Division</th>
                         {% for sub in subjects %}
-                            <th>{{ sub.name }}</th>
+                            <th>{{ sub.name }}<br><small class="text-muted">({{ sub.max_marks|clean_mark }})</small></th>
                         {% endfor %}
                         <th>Total</th>
                         <th class="actions-col">Actions</th>
@@ -70,14 +70,14 @@
                         <td>{{ row.student.register_number }}</td>
                         <td>{{ row.student.name }}</td>
                         <td>{{ row.student.division|default_if_none:"-" }}</td>
-                        {% for mark in row.marks %}
+                        {% for m in row.marks %}
                             <td>
-                                {{ mark|clean_mark }}
-                                {% if request.user.institution.grading_system != 'PERCENTAGE' and mark != '-' %}
-                                    {% if mark < 40 %}
-                                        <span class="badge bg-danger ms-1">{% get_grade mark request.user.institution.grading_system %}</span>
+                                {{ m.mark|clean_mark }}
+                                {% if request.user.institution.grading_system != 'PERCENTAGE' and m.mark != '-' %}
+                                    {% if m.mark < m.subject.max_marks|multiply:0.3 and request.user.institution.grading_system == 'GULF_SECTOR' or m.mark < 40 and request.user.institution.grading_system != 'GULF_SECTOR' %}
+                                        <span class="badge bg-danger ms-1">{% get_grade m.mark request.user.institution.grading_system max_marks=m.subject.max_marks %}</span>
                                     {% else %}
-                                        <span class="badge bg-info ms-1">{% get_grade mark request.user.institution.grading_system %}</span>
+                                        <span class="badge bg-info ms-1">{% get_grade m.mark request.user.institution.grading_system max_marks=m.subject.max_marks %}</span>
                                     {% endif %}
                                 {% endif %}
                             </td>
@@ -91,6 +91,9 @@
                                 {% else %}
                                     <span class="badge bg-warning text-dark mt-1">{% get_grade_name row.total request.user.institution.grading_system max_marks=row.max_total is_total=True %}</span>
                                 {% endif %}
+                            {% elif request.user.institution.grading_system == 'GULF_SECTOR' and row.max_total > 0 %}
+                                <br>
+                                <span class="badge bg-warning text-dark mt-1">{% get_grade_name row.total request.user.institution.grading_system max_marks=row.max_total is_total=True %}</span>
                             {% endif %}
                         </td>
                         <td class="actions-col">

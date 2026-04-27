@@ -46,6 +46,14 @@ def calculate_grade(marks, max_marks, grading_system, is_total=False):
             elif percentage >= 40: return ('C', '')
             else: return ('D', '')
             
+    elif grading_system == 'GULF_SECTOR':
+        if percentage >= 100: return ('Top Most', 'Top Most')
+        elif percentage >= 96: return ('Topper', 'Topper')
+        elif percentage >= 80: return ('Distinction', 'Distinction')
+        elif percentage >= 60: return ('First Class', 'First Class')
+        elif percentage >= 30: return ('Passed', 'Passed')
+        else: return ('Failed', 'Failed')
+            
     else: # PERCENTAGE or undefined
         if percentage >= 33:
             return ('Pass', '')

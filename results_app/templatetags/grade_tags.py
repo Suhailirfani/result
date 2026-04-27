@@ -28,3 +28,10 @@ def clean_mark(value):
         return int(val) if val.is_integer() else val
     except (ValueError, TypeError):
         return value
+
+@register.filter
+def multiply(value, arg):
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0

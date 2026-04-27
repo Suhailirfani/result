@@ -100,10 +100,10 @@
                                 <td>
                                     <span class="badge bg-success fs-6">{{ r.marks|clean_mark }}</span>
                                     {% if institution.grading_system != 'PERCENTAGE' %}
-                                        {% if r.marks < 40 %}
-                                            <span class="badge bg-danger fs-6 ms-2">{% get_grade r.marks institution.grading_system %}</span>
+                                        {% if r.marks < r.subject.max_marks|multiply:0.3 and institution.grading_system == 'GULF_SECTOR' or r.marks < 40 and institution.grading_system != 'GULF_SECTOR' %}
+                                            <span class="badge bg-danger fs-6 ms-2">{% get_grade r.marks institution.grading_system max_marks=r.subject.max_marks %}</span>
                                         {% else %}
-                                            <span class="badge bg-info fs-6 ms-2">{% get_grade r.marks institution.grading_system %}</span>
+                                            <span class="badge bg-info fs-6 ms-2">{% get_grade r.marks institution.grading_system max_marks=r.subject.max_marks %}</span>
                                         {% endif %}
                                     {% endif %}
                                 </td>

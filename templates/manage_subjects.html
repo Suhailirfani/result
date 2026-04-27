@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load grade_tags %}
 
 {% block content %}
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
@@ -19,6 +20,7 @@
                             <tr>
                                 <th>Subject Name</th>
                                 <th>Class</th>
+                                <th>Max Marks</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
@@ -26,7 +28,8 @@
                             {% for subject in subjects %}
                             <tr>
                                 <td class="align-middle fw-bold">{{ subject.name }}</td>
-                                <td class="align-middle border-end">{{ subject.student_class }}</td>
+                                <td class="align-middle">{{ subject.student_class }}</td>
+                                <td class="align-middle border-end">{{ subject.max_marks|clean_mark }}</td>
                                 <td class="align-middle text-end">
                                     <a href="{% url 'results_app:edit_subject' subject.id %}" class="btn btn-sm btn-primary">Edit</a>
                                     <a href="{% url 'results_app:delete_subject' subject.id %}" class="btn btn-sm btn-danger ms-1">Delete</a>

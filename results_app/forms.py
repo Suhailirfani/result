@@ -52,10 +52,11 @@ class StudentForm(forms.ModelForm):
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['name', 'student_class']
+        fields = ['name', 'student_class', 'max_marks']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Mathematics'}),
             'student_class': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 5'}),
+            'max_marks': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Default: 100'}),
         }
 
 class InstitutionEditForm(forms.ModelForm):

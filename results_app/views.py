@@ -140,7 +140,7 @@ def student_result_view(request, inst_id):
                         results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0, 'has_failed_subject': False}
                     results_by_exam[exam_name]['marks'].append(r)
                     results_by_exam[exam_name]['total'] += r.marks
-                    results_by_exam[exam_name]['max_total'] += 100
+                    results_by_exam[exam_name]['max_total'] += r.subject.max_marks
                     
                     if institution.grading_system == 'SUNNI_BOARD' and r.marks < 40:
                         results_by_exam[exam_name]['has_failed_subject'] = True
@@ -183,7 +183,7 @@ def class_result_view(request, class_num):
         students = Student.objects.none()
         
     subjects = Subject.objects.filter(institution=institution, student_class=class_num)
-    max_total = subjects.count() * 100
+    max_total = sum(sub.max_marks for sub in subjects)
     # Organize data for table
     data = []
     for s in students:
@@ -194,7 +194,7 @@ def class_result_view(request, class_num):
         marks_list = []
         for sub in subjects:
             mark = res_dict.get(sub.name, "-")
-            marks_list.append(mark)
+            marks_list.append({'mark': mark, 'subject': sub})
             if institution.grading_system == 'SUNNI_BOARD' and mark != "-" and mark < 40:
                 has_failed_subject = True
             
