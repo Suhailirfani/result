@@ -40,4 +40,5 @@ urlpatterns = [
     path('staff/class/<str:class_num>/enter-marks/', views.enter_marks_view, name='enter_marks'),
     path('staff/class/<str:class_num>/pass-fail/', views.manage_pass_fail_view, name='manage_pass_fail'),
     path('staff/class/<str:class_num>/pass-fail-results/', views.class_result_pass_fail_view, name='class_result_pass_fail'),
+    path('staff/toggle-lock/', views.toggle_results_lock_view, name='toggle_results_lock'),
 ]

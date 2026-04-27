@@ -16,9 +16,14 @@
         <a id="portalLink" href="{% url 'results_app:student_result' request.user.institution.id %}" target="_blank" class="fw-bold text-break mb-2 mb-md-0 me-md-3">
             {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}
         </a>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             <button id="copyBtn" onclick="copyToClipboard()" class="btn btn-sm btn-outline-primary">📋 Copy Link</button>
             <a href="https://api.whatsapp.com/send?text=Check out your results on our portal: {{ request.scheme }}://{{ request.get_host }}{% url 'results_app:student_result' request.user.institution.id %}" target="_blank" class="btn btn-sm btn-success">💬 WhatsApp</a>
+            {% if institution.results_locked %}
+                <a href="{% url 'results_app:toggle_results_lock' %}" class="btn btn-sm btn-danger">🔓 Unlock Portal</a>
+            {% else %}
+                <a href="{% url 'results_app:toggle_results_lock' %}" class="btn btn-sm btn-outline-danger">🔒 Lock Portal</a>
+            {% endif %}
         </div>
     </div>
 </div>

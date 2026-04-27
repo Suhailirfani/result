@@ -62,11 +62,12 @@ class SubjectForm(forms.ModelForm):
 class InstitutionEditForm(forms.ModelForm):
     class Meta:
         model = Institution
-        fields = ['name', 'phone_number', 'grading_system']
+        fields = ['name', 'phone_number', 'grading_system', 'results_locked']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
             'grading_system': forms.Select(attrs={'class': 'form-control'}),
+            'results_locked': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 class ExamForm(forms.ModelForm):

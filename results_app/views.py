@@ -116,6 +116,9 @@ def student_result_view(request, inst_id):
     if not institution.is_approved:
         messages.error(request, "This institution's portal is currently inactive.")
         return redirect('results_app:home')
+    
+    if institution.results_locked:
+        return render(request, 'student_result.html', {'institution': institution})
         
     form = StudentSearchForm(request.GET or None)
     results_by_exam = {}
@@ -147,6 +150,17 @@ def student_result_view(request, inst_id):
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
     return render(request, 'student_result.html', {'form': form, 'results_by_exam': results_by_exam, 'student': student, 'institution': institution})
+
+@login_required
+def toggle_results_lock_view(request):
+    if not hasattr(request.user, 'institution'):
+        return redirect('results_app:home')
+    institution = request.user.institution
+    institution.results_locked = not institution.results_locked
+    institution.save()
+    status = "locked" if institution.results_locked else "unlocked"
+    messages.info(request, f"Student result portal is now {status}.")
+    return redirect('results_app:staff_dashboard')
 
 @login_required
 def staff_dashboard_view(request):
