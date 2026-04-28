@@ -58,9 +58,9 @@ def superadmin_dashboard_view(request):
     if not request.user.is_superuser:
         return redirect('results_app:home')
         
-    pending_institutions = Institution.objects.filter(is_approved=False, is_rejected=False).order_by('name')
+    pending_institutions = Institution.objects.filter(is_approved=False, is_rejected=False).order_by('-user__date_joined')
     approved_institutions = Institution.objects.filter(is_approved=True, is_rejected=False).order_by('name')
-    rejected_institutions = Institution.objects.filter(is_rejected=True).order_by('name')
+    rejected_institutions = Institution.objects.filter(is_rejected=True).order_by('-user__date_joined')
     
     return render(request, 'superadmin_dashboard.html', {
         'pending_institutions': pending_institutions,
