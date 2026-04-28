@@ -20,9 +20,32 @@
                 </div>
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
                     <div class="mb-3">
-                        <label class="form-label">Exam Name</label>
-                        {{ form.exam_name }}
+                        <label class="form-label fw-bold">Select Existing Exam</label>
+                        {{ form.existing_exam }}
+                        {% if form.existing_exam.errors %}
+                            <div class="text-danger small mt-1">{{ form.existing_exam.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4 position-relative">
+                        <hr>
+                        <span class="position-absolute top-0 start-50 translate-middle bg-white px-2 text-muted small">OR</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Create New Exam</label>
+                        {{ form.new_exam_name }}
+                        {% if form.new_exam_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.new_exam_name.errors|join:", " }}</div>
+                        {% endif %}
+                        <div class="form-text">Leave this blank if you selected an existing exam above.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Excel File (.xlsx)</label>

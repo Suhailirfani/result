@@ -147,6 +147,8 @@ def student_result_view(request, inst_id):
                     
                     if institution.grading_system == 'SUNNI_BOARD' and r.marks < 40:
                         results_by_exam[exam_name]['has_failed_subject'] = True
+                    elif institution.grading_system == 'GULF_SECTOR' and r.marks < (r.subject.max_marks * 0.3):
+                        results_by_exam[exam_name]['has_failed_subject'] = True
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
     return render(request, 'student_result.html', {'form': form, 'results_by_exam': results_by_exam, 'student': student, 'institution': institution})
@@ -210,6 +212,8 @@ def class_result_view(request, class_num):
             mark = res_dict.get(sub.name, "-")
             marks_list.append({'mark': mark, 'subject': sub})
             if institution.grading_system == 'SUNNI_BOARD' and mark != "-" and mark < 40:
+                has_failed_subject = True
+            elif institution.grading_system == 'GULF_SECTOR' and mark != "-" and mark < (sub.max_marks * 0.3):
                 has_failed_subject = True
             
         data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0, 'max_total': max_total, 'has_failed_subject': has_failed_subject})
@@ -306,13 +310,17 @@ def bulk_upload_view(request):
     institution = request.user.institution
     
     if request.method == 'POST':
-        form = BulkUploadForm(request.POST, request.FILES)
+        form = BulkUploadForm(request.POST, request.FILES, institution=institution)
         if form.is_valid():
             excel_file = form.cleaned_data['file']
-            exam_name = form.cleaned_data['exam_name']
+            existing_exam = form.cleaned_data.get('existing_exam')
+            new_exam_name = form.cleaned_data.get('new_exam_name')
             
             from .models import Exam
-            exam_obj, _ = Exam.objects.get_or_create(institution=institution, name=exam_name)
+            if existing_exam:
+                exam_obj = existing_exam
+            else:
+                exam_obj, _ = Exam.objects.get_or_create(institution=institution, name=new_exam_name)
             
             if not (excel_file.name.endswith('.xlsx') or excel_file.name.endswith('.xls')):
                 messages.error(request, 'Please upload a valid Excel file (.xlsx or .xls).')
@@ -403,7 +411,7 @@ def bulk_upload_view(request):
                 return redirect('results_app:bulk_upload')
                 
     else:
-        form = BulkUploadForm()
+        form = BulkUploadForm(institution=institution)
     return render(request, 'bulk_upload.html', {'form': form})
 
 @login_required

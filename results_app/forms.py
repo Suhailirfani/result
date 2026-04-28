@@ -31,8 +31,34 @@ class SingleUploadForm(forms.ModelForm):
         }
 
 class BulkUploadForm(forms.Form):
-    exam_name = forms.CharField(max_length=255, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Model Exam 2026'}))
+    existing_exam = forms.ModelChoiceField(
+        queryset=Exam.objects.none(), 
+        required=False, 
+        empty_label="-- Select an existing exam --",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    new_exam_name = forms.CharField(
+        max_length=255, 
+        required=False, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OR enter a new exam name'})
+    )
     file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx, .xls'}))
+
+    def __init__(self, *args, **kwargs):
+        institution = kwargs.pop('institution', None)
+        super().__init__(*args, **kwargs)
+        if institution:
+            self.fields['existing_exam'].queryset = Exam.objects.filter(institution=institution).order_by('-id')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        existing_exam = cleaned_data.get('existing_exam')
+        new_exam_name = cleaned_data.get('new_exam_name')
+
+        if not existing_exam and not new_exam_name:
+            raise forms.ValidationError("You must either select an existing exam or enter a new exam name.")
+        
+        return cleaned_data
 
 class StudentBulkUploadForm(forms.Form):
     file = forms.FileField(required=True, widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.xlsx, .xls'}))
