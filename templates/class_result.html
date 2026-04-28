@@ -73,13 +73,6 @@
                         {% for m in row.marks %}
                             <td>
                                 {{ m.mark|clean_mark }}
-                                {% if request.user.institution.grading_system != 'PERCENTAGE' and m.mark != '-' %}
-                                    {% if m.mark < m.subject.max_marks|multiply:0.3 and request.user.institution.grading_system == 'GULF_SECTOR' or m.mark < 40 and request.user.institution.grading_system != 'GULF_SECTOR' %}
-                                        <span class="badge bg-danger ms-1">{% get_grade m.mark request.user.institution.grading_system max_marks=m.subject.max_marks %}</span>
-                                    {% else %}
-                                        <span class="badge bg-info ms-1">{% get_grade m.mark request.user.institution.grading_system max_marks=m.subject.max_marks %}</span>
-                                    {% endif %}
-                                {% endif %}
                             </td>
                         {% endfor %}
                         <td>
