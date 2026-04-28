@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-secondary mt-5">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">Rename Class {{ class_num }}</h4>
+            </div>
+            <div class="card-body py-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill"></i> 
+                    This will update the class number for all students and subjects currently assigned to Class {{ class_num }}.
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="new_class_num" class="form-label fw-bold">New Class Number</label>
+                        <input type="number" class="form-control" id="new_class_num" name="new_class_num" required placeholder="e.g. 6">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Rename Class</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

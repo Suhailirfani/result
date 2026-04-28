@@ -2,7 +2,12 @@
 
 {% block content %}
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
-    <h2 class="mb-0">{{ institution.name }} Dashboard</h2>
+    <div class="d-flex align-items-center gap-3">
+        {% if institution.logo %}
+            <img src="{{ institution.logo.url }}" alt="Logo" style="height: 50px; width: auto; object-fit: contain; border-radius: 8px;">
+        {% endif %}
+        <h2 class="mb-0">{{ institution.name }} Dashboard</h2>
+    </div>
     <div class="d-flex flex-column flex-sm-row gap-2">
         <a href="{% url 'results_app:single_upload' %}" class="btn btn-success">Add Single Result</a>
         <a href="{% url 'results_app:bulk_upload' %}" class="btn btn-warning">Bulk Excel Upload</a>
@@ -98,6 +103,10 @@ function copyToClipboard() {
                                         <span class="text-muted small">|</span>
                                         <a href="{% url 'results_app:manage_subjects' c %}" class="text-decoration-none small text-primary">Manage Subjects</a>
                                     {% endif %}
+                                    <span class="text-muted small">|</span>
+                                    <a href="{% url 'results_app:rename_class' c %}" class="text-decoration-none small text-secondary">Rename Class</a>
+                                    <span class="text-muted small">|</span>
+                                    <a href="{% url 'results_app:delete_class' c %}" class="text-decoration-none small text-danger">Delete Class</a>
                                 </div>
                             </div>
                         {% endfor %}

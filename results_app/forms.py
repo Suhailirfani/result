@@ -7,6 +7,7 @@ class InstitutionRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     phone_number = forms.CharField(max_length=20, required=True, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 9947924613'}))
     grading_system = forms.ChoiceField(choices=Institution.GRADING_CHOICES, required=True, widget=forms.Select(attrs={'class': 'form-control'}))
+    logo = forms.ImageField(required=False, widget=forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/png, image/jpeg'}))
     
     class Meta:
         model = User
@@ -88,12 +89,13 @@ class SubjectForm(forms.ModelForm):
 class InstitutionEditForm(forms.ModelForm):
     class Meta:
         model = Institution
-        fields = ['name', 'phone_number', 'grading_system', 'results_locked']
+        fields = ['name', 'phone_number', 'grading_system', 'results_locked', 'logo']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
             'grading_system': forms.Select(attrs={'class': 'form-control'}),
             'results_locked': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'logo': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/png, image/jpeg'}),
         }
 
 class ExamForm(forms.ModelForm):

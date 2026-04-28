@@ -41,4 +41,6 @@ urlpatterns = [
     path('staff/class/<str:class_num>/pass-fail/', views.manage_pass_fail_view, name='manage_pass_fail'),
     path('staff/class/<str:class_num>/pass-fail-results/', views.class_result_pass_fail_view, name='class_result_pass_fail'),
     path('staff/toggle-lock/', views.toggle_results_lock_view, name='toggle_results_lock'),
+    path('staff/class/<str:class_num>/rename/', views.rename_class_view, name='rename_class'),
+    path('staff/class/<str:class_num>/delete/', views.delete_class_view, name='delete_class'),
 ]

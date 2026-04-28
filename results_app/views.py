@@ -11,7 +11,7 @@ import pandas as pd
 
 def register_institution(request):
     if request.method == 'POST':
-        form = InstitutionRegistrationForm(request.POST)
+        form = InstitutionRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
@@ -19,7 +19,8 @@ def register_institution(request):
             phone_number = form.cleaned_data.get('phone_number', '')
             institution_name = form.cleaned_data.get('institution_name', user.username)
             grading_system = form.cleaned_data.get('grading_system', 'PERCENTAGE')
-            Institution.objects.create(user=user, name=institution_name, phone_number=phone_number, grading_system=grading_system)
+            logo = form.cleaned_data.get('logo', None)
+            Institution.objects.create(user=user, name=institution_name, phone_number=phone_number, grading_system=grading_system, logo=logo)
             auth_login(request, user)
             return redirect('results_app:pending_approval')
     else:
@@ -593,7 +594,7 @@ def edit_institution_view(request):
         return redirect('results_app:pending_approval')
     institution = request.user.institution
     if request.method == 'POST':
-        form = InstitutionEditForm(request.POST, instance=institution)
+        form = InstitutionEditForm(request.POST, request.FILES, instance=institution)
         if form.is_valid():
             form.save()
             messages.success(request, 'Institution details updated successfully.')
@@ -855,6 +856,43 @@ def class_result_pass_fail_view(request, class_num):
         'exams': exams,
         'selected_exam': selected_exam
     })
+
+@login_required
+def rename_class_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    
+    if request.method == 'POST':
+        new_class_num_str = request.POST.get('new_class_num')
+        try:
+            new_class_num = int(new_class_num_str)
+            # Update all students and subjects associated with this class
+            Student.objects.filter(institution=institution, student_class=class_num).update(student_class=new_class_num)
+            Subject.objects.filter(institution=institution, student_class=class_num).update(student_class=new_class_num)
+            messages.success(request, f"Class {class_num} has been successfully renamed to Class {new_class_num}.")
+            return redirect('results_app:staff_dashboard')
+        except (ValueError, TypeError):
+            messages.error(request, "Invalid class number provided. Must be an integer.")
+            
+    return render(request, 'rename_class.html', {'class_num': class_num})
+
+@login_required
+def delete_class_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    
+    if request.method == 'POST':
+        # Delete all students and subjects associated with this class
+        Student.objects.filter(institution=institution, student_class=class_num).delete()
+        Subject.objects.filter(institution=institution, student_class=class_num).delete()
+        messages.success(request, f"Class {class_num} and all its data have been successfully deleted.")
+        return redirect('results_app:staff_dashboard')
+        
+    return render(request, 'delete_class.html', {'class_num': class_num})
 
 def custom_csrf_failure(request, reason=""):
     return render(request, '403_csrf.html', {'reason': reason}, status=403)

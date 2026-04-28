@@ -17,6 +17,7 @@ class Institution(models.Model):
     is_rejected = models.BooleanField(default=False)
     grading_system = models.CharField(max_length=20, choices=GRADING_CHOICES, default='PERCENTAGE')
     results_locked = models.BooleanField(default=False)
+    logo = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({'Approved' if self.is_approved else 'Pending'})"

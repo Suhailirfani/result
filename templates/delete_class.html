@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-danger mt-5">
+            <div class="card-header bg-danger text-white text-center">
+                <h4 class="mb-0">Delete Class {{ class_num }}?</h4>
+            </div>
+            <div class="card-body py-4 text-center">
+                <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
+                <h3 class="mb-4">Are you absolutely sure?</h3>
+                
+                <p class="fs-5 text-muted">
+                    You are about to permanently delete <strong>Class {{ class_num }}</strong>.
+                </p>
+                <div class="alert alert-warning text-start">
+                    <strong>Warning! This action will also delete:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>All students registered under Class {{ class_num }}</li>
+                        <li>All subjects created for Class {{ class_num }}</li>
+                        <li>All exam marks and results associated with those students</li>
+                    </ul>
+                </div>
+                <p class="text-danger fw-bold mb-4">This action cannot be undone.</p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4 fw-bold">Yes, Delete Everything</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
