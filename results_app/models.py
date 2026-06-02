@@ -9,6 +9,7 @@ class Institution(models.Model):
         ('PERCENTAGE', 'Standard Percentage Only'),
         ('PASS_FAIL', 'Pass / Fail Only'),
         ('GULF_SECTOR', 'Gulf Sector System'),
+        ('HADIYA', 'Hadiya Grading System'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='institution')
     name = models.CharField(max_length=255)

@@ -142,7 +142,7 @@
                                 <th><strong>Total Marks</strong></th>
                                 <th>
                                     <span class="badge bg-primary fs-5">{{ exam_data.total|clean_mark }}</span>
-                                    {% if institution.grading_system == 'SUNNI_BOARD' or institution.grading_system == 'GULF_SECTOR' %}
+                                    {% if institution.grading_system == 'SUNNI_BOARD' or institution.grading_system == 'GULF_SECTOR' or institution.grading_system == 'HADIYA' %}
                                         {% if exam_data.has_failed_subject %}
                                             <span class="badge bg-danger fs-6 ms-2">FAILED</span>
                                         {% else %}

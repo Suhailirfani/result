@@ -150,6 +150,8 @@ def student_result_view(request, inst_id):
                         results_by_exam[exam_name]['has_failed_subject'] = True
                     elif institution.grading_system == 'GULF_SECTOR' and r.marks < (r.subject.max_marks * 0.3):
                         results_by_exam[exam_name]['has_failed_subject'] = True
+                    elif institution.grading_system == 'HADIYA' and r.marks < (r.subject.max_marks * 0.4):
+                        results_by_exam[exam_name]['has_failed_subject'] = True
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
     return render(request, 'student_result.html', {'form': form, 'results_by_exam': results_by_exam, 'student': student, 'institution': institution})
@@ -203,22 +205,49 @@ def class_result_view(request, class_num):
     max_total = sum(sub.max_marks for sub in subjects)
     # Organize data for table
     data = []
+    passed_count = 0
+    failed_count = 0
     for s in students:
         student_results = Result.objects.filter(student=s, exam=selected_exam)
         res_dict = {r.subject.name: r.marks for r in student_results}
         
         has_failed_subject = False
+        has_any_mark = False
         marks_list = []
         for sub in subjects:
             mark = res_dict.get(sub.name, "-")
             marks_list.append({'mark': mark, 'subject': sub})
-            if institution.grading_system == 'SUNNI_BOARD' and mark != "-" and mark < 40:
-                has_failed_subject = True
-            elif institution.grading_system == 'GULF_SECTOR' and mark != "-" and mark < (sub.max_marks * 0.3):
-                has_failed_subject = True
+            if mark != "-":
+                has_any_mark = True
+                if institution.grading_system == 'SUNNI_BOARD' and mark < 40:
+                    has_failed_subject = True
+                elif institution.grading_system == 'GULF_SECTOR' and mark < (sub.max_marks * 0.3):
+                    has_failed_subject = True
+                elif institution.grading_system == 'HADIYA' and mark < (sub.max_marks * 0.4):
+                    has_failed_subject = True
+                elif institution.grading_system == '10_POINT' and mark < (sub.max_marks * 0.33):
+                    has_failed_subject = True
+                elif institution.grading_system == '9_POINT' and mark < (sub.max_marks * 0.30):
+                    has_failed_subject = True
+                elif institution.grading_system == 'PERCENTAGE' and mark < (sub.max_marks * 0.33):
+                    has_failed_subject = True
             
         data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0, 'max_total': max_total, 'has_failed_subject': has_failed_subject})
-    return render(request, 'class_result.html', {'class_num': class_num, 'data': data, 'subjects': subjects, 'exams': exams, 'selected_exam': selected_exam})
+        if has_any_mark:
+            if has_failed_subject:
+                failed_count += 1
+            else:
+                passed_count += 1
+                
+    return render(request, 'class_result.html', {
+        'class_num': class_num,
+        'data': data,
+        'subjects': subjects,
+        'exams': exams,
+        'selected_exam': selected_exam,
+        'passed_count': passed_count,
+        'failed_count': failed_count
+    })
 
 @login_required
 def toppers_view(request, class_num):
@@ -243,12 +272,58 @@ def toppers_view(request, class_num):
         
         if institution.grading_system == 'SUNNI_BOARD':
             students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
+        elif institution.grading_system == 'HADIYA':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
     else:
         students = Student.objects.none()
         
     # Let's say top 3
     toppers = students[:3]
     return render(request, 'toppers.html', {'toppers': toppers, 'class_num': class_num, 'exams': exams, 'selected_exam': selected_exam})
+
+@login_required
+def toppers_poster_view(request, class_num):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    from .models import Exam
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+    
+    exam_id = request.GET.get('exam')
+    selected_exam = None
+    if exam_id:
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+    elif exams.exists():
+        selected_exam = exams.first()
+        
+    if selected_exam:
+        students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
+            total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
+        ).order_by('-total_marks')
+        
+        if institution.grading_system == 'SUNNI_BOARD':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
+        elif institution.grading_system == 'HADIYA':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
+    else:
+        students = Student.objects.none()
+        
+    # Top 3
+    toppers = list(students[:3])
+    
+    # Pad to always have 3 elements for easier rendering in template
+    while len(toppers) < 3:
+        toppers.append(None)
+        
+    return render(request, 'toppers_poster.html', {
+        'institution': institution,
+        'class_num': class_num,
+        'selected_exam': selected_exam,
+        'rank_1': toppers[0],
+        'rank_2': toppers[1],
+        'rank_3': toppers[2]
+    })
 
 @login_required
 def rank_list_view(request, class_num):
@@ -273,6 +348,8 @@ def rank_list_view(request, class_num):
         
         if institution.grading_system == 'SUNNI_BOARD':
             students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
+        elif institution.grading_system == 'HADIYA':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
     else:
         students = Student.objects.none()
         
@@ -850,11 +927,16 @@ def class_result_pass_fail_view(request, class_num):
                 'status': status
             })
             
+    passed_count = sum(1 for item in student_data if item['status'] == 'Passed')
+    failed_count = sum(1 for item in student_data if item['status'] == 'Failed')
+    
     return render(request, 'class_result_pass_fail.html', {
         'class_num': class_num,
         'student_data': student_data,
         'exams': exams,
-        'selected_exam': selected_exam
+        'selected_exam': selected_exam,
+        'passed_count': passed_count,
+        'failed_count': failed_count
     })
 
 @login_required

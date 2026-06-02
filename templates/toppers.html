@@ -18,6 +18,7 @@
             </select>
         </form>
         {% endif %}
+        <a href="{% url 'results_app:toppers_poster' class_num %}{% if selected_exam %}?exam={{ selected_exam.id }}{% endif %}" class="btn btn-warning" target="_blank"><i class="bi bi-image"></i> Generate E-Poster</a>
         <a href="{% url 'results_app:rank_list' class_num %}" class="btn btn-info">Full Rank List</a>
         <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary">Back</a>
     </div>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toppers E-Poster - {{ class_num }}</title>
+    <!-- Bootstrap CSS for basic grid -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .poster-container {
+            width: 1080px; /* Standard square Instagram/Facebook size */
+            height: 1080px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Abstract Background Elements */
+        .poster-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+            z-index: 0;
+        }
+
+        .header, .pedestal-area, .footer {
+            z-index: 1;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            max-height: 120px;
+            margin-bottom: 15px;
+            background: white;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .inst-name {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-transform: uppercase;
+            color: #ffd700;
+        }
+
+        .exam-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .class-badge {
+            display: inline-block;
+            background: #ffd700;
+            color: #1e3c72;
+            padding: 5px 25px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Pedestal Layout */
+        .pedestal-area {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 30px;
+            flex-grow: 1;
+            padding-bottom: 40px;
+        }
+
+        .student-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            width: 280px;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1e3c72;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border: 5px solid;
+        }
+
+        .student-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .student-marks {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffd700;
+            margin-bottom: 0;
+            line-height: 1;
+        }
+
+        .marks-label {
+            font-size: 1rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .rank-badge {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Specific Ranks */
+        .rank-1 {
+            width: 340px;
+            padding: 40px 20px;
+            transform: translateY(-40px);
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.15);
+        }
+        .rank-1 .avatar { border-color: #ffd700; width: 140px; height: 140px; font-size: 4rem;}
+        .rank-1 .student-name { font-size: 1.8rem; }
+        .rank-1 .student-marks { font-size: 2.8rem; }
+        .rank-1 .rank-badge { background: linear-gradient(135deg, #ffd700, #b8860b); width: 60px; height: 60px; font-size: 2rem; top: -30px; }
+
+        .rank-2 {
+            border-color: #e0e0e0;
+        }
+        .rank-2 .avatar { border-color: #e0e0e0; }
+        .rank-2 .rank-badge { background: linear-gradient(135deg, #e0e0e0, #9e9e9e); }
+        .rank-2 .student-marks { color: #e0e0e0; }
+
+        .rank-3 {
+            border-color: #cd7f32;
+        }
+        .rank-3 .avatar { border-color: #cd7f32; }
+        .rank-3 .rank-badge { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+        .rank-3 .student-marks { color: #cd7f32; }
+
+        .footer {
+            text-align: center;
+            font-size: 1.2rem;
+            opacity: 0.8;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 20px;
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .btn-download {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .btn-download:hover {
+            transform: translateY(-2px);
+            background: #218838;
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-right: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls no-print" id="controls">
+        <a href="javascript:window.close();" class="btn-back">Close</a>
+        <button class="btn-download" onclick="downloadPoster()">Download Poster</button>
+    </div>
+
+    <!-- The actual poster -->
+    <div class="poster-container" id="poster">
+        <div class="header">
+            {% if institution.logo %}
+                <img src="{{ institution.logo.url }}" alt="Institution Logo">
+            {% endif %}
+            <div class="inst-name">{{ institution.name }}</div>
+            <div class="exam-title">HEARTIEST CONGRATULATIONS TO OUR TOPPERS</div>
+            {% if selected_exam %}
+                <div style="font-size: 1.2rem; opacity: 0.9; margin-top: 5px; text-transform: uppercase;">{{ selected_exam.name }}</div>
+            {% endif %}
+            <div class="class-badge">CLASS {{ class_num }}</div>
+        </div>
+
+        <div class="pedestal-area">
+            <!-- Rank 2 -->
+            {% if rank_2 %}
+            <div class="student-card rank-2">
+                <div class="rank-badge">2</div>
+                <div class="avatar">{{ rank_2.name|make_list|first|upper }}</div>
+                <div class="student-name">{{ rank_2.name }}</div>
+                <div class="student-marks">{{ rank_2.total_marks|floatformat:0 }}</div>
+                <div class="marks-label">Total Marks</div>
+            </div>
+            {% else %}
+            <div class="student-card rank-2" style="opacity: 0;"></div>
+            {% endif %}
+
+            <!-- Rank 1 -->
+            {% if rank_1 %}
+            <div class="student-card rank-1">
+                <div class="rank-badge">1</div>
+                <div class="avatar">{{ rank_1.name|make_list|first|upper }}</div>
+                <div class="student-name">{{ rank_1.name }}</div>
+                <div class="student-marks">{{ rank_1.total_marks|floatformat:0 }}</div>
+                <div class="marks-label">Total Marks</div>
+            </div>
+            {% endif %}
+
+            <!-- Rank 3 -->
+            {% if rank_3 %}
+            <div class="student-card rank-3">
+                <div class="rank-badge">3</div>
+                <div class="avatar">{{ rank_3.name|make_list|first|upper }}</div>
+                <div class="student-name">{{ rank_3.name }}</div>
+                <div class="student-marks">{{ rank_3.total_marks|floatformat:0 }}</div>
+                <div class="marks-label">Total Marks</div>
+            </div>
+            {% else %}
+            <div class="student-card rank-3" style="opacity: 0;"></div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            Wishing you all the best for your future endeavors!
+        </div>
+    </div>
+
+    <script>
+        function downloadPoster() {
+            const btn = document.querySelector('.btn-download');
+            const originalText = btn.innerText;
+            btn.innerText = 'Generating...';
+            btn.disabled = true;
+
+            const poster = document.getElementById('poster');
+            
+            html2canvas(poster, {
+                scale: 2, // High resolution
+                useCORS: true,
+                backgroundColor: null
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Toppers_Class_{{ class_num }}.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                btn.innerText = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

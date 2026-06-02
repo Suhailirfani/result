@@ -39,6 +39,33 @@
 
         {% if selected_exam %}
             <h4 class="text-center mb-4 mt-2 print-show d-none">Exam: {{ selected_exam.name }}</h4>
+            
+            <!-- Class Statistics Summary -->
+            <div class="row g-3 mb-4 d-print-flex">
+                <div class="col-6 col-sm-3">
+                    <div class="card border-0 bg-success bg-opacity-10 text-success h-100 shadow-sm" style="border-radius: 12px;">
+                        <div class="card-body text-center p-3">
+                            <div class="d-flex justify-content-center align-items-center mb-1">
+                                <i class="bi bi-check-circle-fill fs-3 me-2 text-success"></i>
+                                <h6 class="card-subtitle text-uppercase fw-bold text-success mb-0" style="font-size: 0.8rem; letter-spacing: 0.5px;">Passed</h6>
+                            </div>
+                            <h3 class="card-title fw-bold mb-0 fs-2">{{ passed_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-sm-3">
+                    <div class="card border-0 bg-danger bg-opacity-10 text-danger h-100 shadow-sm" style="border-radius: 12px;">
+                        <div class="card-body text-center p-3">
+                            <div class="d-flex justify-content-center align-items-center mb-1">
+                                <i class="bi bi-x-circle-fill fs-3 me-2 text-danger"></i>
+                                <h6 class="card-subtitle text-uppercase fw-bold text-danger mb-0" style="font-size: 0.8rem; letter-spacing: 0.5px;">Failed</h6>
+                            </div>
+                            <h3 class="card-title fw-bold mb-0 fs-2">{{ failed_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle">
                     <thead class="table-light">

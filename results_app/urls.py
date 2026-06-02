@@ -18,6 +18,7 @@ urlpatterns = [
     path('staff/dashboard/', views.staff_dashboard_view, name='staff_dashboard'),
     path('staff/class/<str:class_num>/', views.class_result_view, name='class_result'),
     path('staff/class/<str:class_num>/toppers/', views.toppers_view, name='toppers'),
+    path('staff/class/<str:class_num>/toppers-poster/', views.toppers_poster_view, name='toppers_poster'),
     path('staff/class/<str:class_num>/ranklist/', views.rank_list_view, name='rank_list'),
     path('staff/upload/single/', views.single_upload_view, name='single_upload'),
     path('staff/upload/bulk/', views.bulk_upload_view, name='bulk_upload'),

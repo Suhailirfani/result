@@ -64,6 +64,16 @@ def calculate_grade(marks, max_marks, grading_system, is_total=False):
             elif percentage >= 40: return ('C', '')
             else: return ('D', '')
             
+    elif grading_system == 'HADIYA':
+        if percentage >= 90: return ('a+', 'a+')
+        elif percentage >= 80: return ('a', 'a')
+        elif percentage >= 70: return ('b+', 'b+')
+        elif percentage >= 60: return ('b', 'b')
+        elif percentage >= 50: return ('c+', 'c+')
+        elif percentage >= 40: return ('c', 'c')
+        elif percentage >= 20: return ('D', 'D')
+        else: return ('e', 'e')
+            
     else: # PERCENTAGE or undefined
         if percentage >= 33:
             return ('Pass', '')
