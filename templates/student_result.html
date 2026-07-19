@@ -3,29 +3,247 @@
 
 {% block content %}
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
+
     body {
         text-transform: uppercase !important;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
-@media print {
-    body {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+
+    /* Print Optimization */
+    @media print {
+        body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            background-color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .navbar, nav, footer, .d-print-none, .btn, .theme-switcher-bar {
+            display: none !important;
+        }
+        .container {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .report-card-wrapper {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
     }
-    .navbar, nav, footer, .d-print-none {
-        display: none !important;
+
+    /* Visual Styling for Ummu Habeeba Report Card */
+    .report-card-wrapper {
+        border-radius: 20px;
+        overflow: hidden;
+        background: #ffffff;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
     }
-    .card {
-        border: none !important;
-        box-shadow: none !important;
+
+    .rc-brand-header {
+        background: #ffffff;
+        padding: 22px 30px;
+        border-bottom: 2px solid #f0f0f0;
     }
-    .container {
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
+
+    .rc-header-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 900;
+        font-size: 2.1rem;
+        letter-spacing: 0.5px;
+        color: #111111;
+        line-height: 1.15;
     }
-}
+
+    /* Themes for Gradient Body */
+    .theme-gold {
+        background: linear-gradient(160deg, #fffbeb 0%, #fde047 35%, #f59e0b 85%, #d97706 100%);
+    }
+
+    .theme-emerald {
+        background: linear-gradient(160deg, #ecfdf5 0%, #6ee7b7 35%, #10b981 85%, #047857 100%);
+    }
+
+    .theme-blue {
+        background: linear-gradient(160deg, #f0f9ff 0%, #7dd3fc 35%, #38bdf8 85%, #0284c7 100%);
+    }
+
+    .theme-purple {
+        background: linear-gradient(160deg, #faf5ff 0%, #d8b4fe 35%, #c084fc 85%, #7e22ce 100%);
+    }
+
+    .rc-gold-body {
+        padding: 32px 38px;
+        position: relative;
+    }
+
+    .rc-title-banner {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .rc-title-text {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 900;
+        font-size: 2.25rem;
+        color: #064e3b;
+        letter-spacing: 3.5px;
+        margin: 0;
+        text-shadow: 0 1px 2px rgba(255,255,255,0.4);
+    }
+
+    .rc-title-line {
+        height: 4px;
+        background: #064e3b;
+        width: 82%;
+        margin: 6px auto 0 auto;
+        border-radius: 3px;
+    }
+
+    /* Student Info Line Items */
+    .rc-info-row {
+        margin-bottom: 14px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #111;
+    }
+
+    .rc-label {
+        letter-spacing: 1px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        color: #0d0d0d;
+        display: inline-block;
+        min-width: 80px;
+    }
+
+    .rc-value-line {
+        border-bottom: 2.5px solid #000;
+        padding: 0 10px 2px 10px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: #000;
+        flex-grow: 1;
+    }
+
+    /* Modern Table */
+    .rc-table {
+        border-collapse: separate;
+        border-spacing: 0 6px;
+        width: 100%;
+        margin: 20px 0;
+    }
+
+    .rc-table th {
+        background-color: #27272a;
+        color: #ffffff;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 0.95rem;
+        letter-spacing: 1.2px;
+        padding: 13px 16px;
+        text-align: center;
+        border: none;
+    }
+
+    .rc-table th:first-child {
+        text-align: left;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+        padding-left: 20px;
+    }
+
+    .rc-table th:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .rc-table td {
+        background-color: #f4f4f5;
+        color: #111111;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.02rem;
+        padding: 10px 16px;
+        text-align: center;
+        border: none;
+    }
+
+    .rc-table td:first-child {
+        text-align: left;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+        padding-left: 20px;
+    }
+
+    .rc-table td:last-child {
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+        font-weight: 800;
+    }
+
+    /* Grand Total & Status Bar */
+    .rc-summary-pill {
+        background-color: #e4e4e7;
+        border: 1px solid #d4d4d8;
+        border-radius: 12px;
+        padding: 13px 20px;
+        text-align: center;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 900;
+        font-size: 1.45rem;
+        color: #111;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .rc-signatory-section {
+        text-align: center;
+        margin-top: 36px;
+        margin-bottom: 24px;
+    }
+
+    .rc-signatory-name {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 900;
+        font-size: 1.25rem;
+        color: #111;
+        letter-spacing: 1px;
+        margin-bottom: 2px;
+    }
+
+    .rc-signatory-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #222;
+        letter-spacing: 0.5px;
+    }
+
+    /* Footer Logo Badges */
+    .rc-footer-badge {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 8px 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-align: left;
+    }
 </style>
+
 {% if institution.results_locked %}
 <div class="row justify-content-center">
     <div class="col-md-6">
@@ -45,20 +263,23 @@
 {% elif not student %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white text-center">
+        <div class="card shadow-lg border-0 rounded-4 mb-4">
+            <div class="card-header bg-white text-center py-4 border-0">
                 {% if institution.logo %}
-                    <img src="{{ institution.logo.url }}" alt="Logo" style="height: 60px; width: auto; object-fit: contain; margin-bottom: 10px;">
+                    <img src="{{ institution.logo.url }}" alt="Logo" style="height: 65px; width: auto; object-fit: contain;" class="mb-2">
                 {% endif %}
-                <h4 class="mb-0">{{ institution.name }} Result Portal</h4>
+                <h3 class="mb-0 fw-bold text-dark" style="font-family: 'Outfit', sans-serif;">{{ institution.name }}</h3>
+                <span class="text-muted small fw-bold">STUDENT RESULT PORTAL</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="GET">
                     <div class="mb-3">
-                        <label class="form-label">Register Number</label>
+                        <label class="form-label fw-bold small text-secondary">REGISTER NUMBER</label>
                         {{ form.register_number }}
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Fetch Result</button>
+                    <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold text-dark shadow-sm">
+                        <i class="bi bi-search me-1"></i> VIEW REPORT CARD
+                    </button>
                 </form>
             </div>
         </div>
@@ -67,28 +288,287 @@
 {% endif %}
 
 {% if student %}
+{% if institution.grading_system == 'UMMU_HABEEBA' %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        
+        <!-- Theme Selector Pills (Web View Only) -->
+        <div class="d-flex align-items-center justify-content-center gap-2 mb-3 d-print-none theme-switcher-bar flex-wrap">
+            <span class="small fw-bold text-muted me-1">GRADIENT THEME:</span>
+            <button onclick="setCardTheme('theme-gold')" class="btn btn-sm btn-light border fw-bold px-3 rounded-pill">
+                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background: #f59e0b;"></span> Warm Gold
+            </button>
+            <button onclick="setCardTheme('theme-emerald')" class="btn btn-sm btn-light border fw-bold px-3 rounded-pill">
+                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background: #10b981;"></span> Mint Emerald
+            </button>
+            <button onclick="setCardTheme('theme-blue')" class="btn btn-sm btn-light border fw-bold px-3 rounded-pill">
+                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background: #38bdf8;"></span> Sky Blue
+            </button>
+            <button onclick="setCardTheme('theme-purple')" class="btn btn-sm btn-light border fw-bold px-3 rounded-pill">
+                <span class="d-inline-block rounded-circle me-1" style="width: 12px; height: 12px; background: #c084fc;"></span> Royal Purple
+            </button>
+        </div>
+
+        <div class="report-card-wrapper mb-4" id="reportCardToCapture">
+            
+            <!-- Top Branding Header -->
+            <div class="rc-brand-header text-center">
+                <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+                    {% if institution.logo %}
+                        <img src="{{ institution.logo.url }}" alt="Logo" style="height: 75px; width: auto; object-fit: contain;">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center rounded-3 p-2" style="background-color: #673ab7; color: white; width: 60px; height: 60px;">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6l9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+                        </div>
+                    {% endif %}
+                    <h1 class="rc-header-title mb-0 text-uppercase">
+                        {{ institution.name }}
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Main Gradient Body Section -->
+            <div class="rc-gold-body theme-gold" id="rcBodyGrad">
+                
+                <!-- REPORT CARD Header Banner -->
+                <div class="rc-title-banner">
+                    <h2 class="rc-title-text text-uppercase">
+                        REPORT CARD
+                    </h2>
+                    <div class="rc-title-line"></div>
+                </div>
+
+                <!-- Student Metadata Block -->
+                <div class="student-info-section px-1 px-md-3">
+                    <!-- Line 1: NAME and CLASS -->
+                    <div class="row align-items-baseline rc-info-row">
+                        <div class="col-md-7 d-flex align-items-baseline mb-2 mb-md-0">
+                            <span class="rc-label">NAME:</span>
+                            <span class="rc-value-line">{{ student.name }}</span>
+                        </div>
+                        <div class="col-md-5 d-flex align-items-baseline">
+                            <span class="rc-label">CLASS:</span>
+                            <span class="rc-value-line">{{ student.class_name|default:student.student_class }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Line 2: BATCH and YEAR -->
+                    <div class="row align-items-baseline rc-info-row">
+                        <div class="col-md-7 d-flex align-items-baseline mb-2 mb-md-0">
+                            <span class="rc-label">BATCH:</span>
+                            <span class="rc-value-line">{{ student.batch|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-5 d-flex align-items-baseline">
+                            <span class="rc-label">YEAR:</span>
+                            <span class="rc-value-line">{{ student.year|default:"-" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marks Table -->
+                {% for exam_name, exam_data in results_by_exam.items %}
+                <div class="table-responsive">
+                    <table class="rc-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">SUBJECT</th>
+                                <th style="width: 20%;">EXAM</th>
+                                <th style="width: 22%;">COURSE WORK</th>
+                                <th style="width: 18%;">SCORE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in exam_data.marks %}
+                            <tr>
+                                <td class="text-uppercase">{{ r.subject.name }}</td>
+                                <td>{{ r.marks|clean_mark }}</td>
+                                <td>{{ r.ce_marks|clean_mark }}</td>
+                                <td>{{ r.total_score|clean_mark }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="py-3 bg-light text-muted">No marks entered for this student.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Grand Total & Result Status Bar -->
+                <div class="row g-3 justify-content-center my-3">
+                    <div class="col-6 col-md-5">
+                        <div class="rc-summary-pill">
+                            {{ exam_data.total|clean_mark }}
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-5">
+                        <div class="rc-summary-pill">
+                            {% if exam_data.has_failed_subject %}
+                                <span class="text-danger">FAILED</span>
+                            {% else %}
+                                <span style="color: #0d0d0d;">PASSED</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Signatory Line -->
+                <div class="rc-signatory-section">
+                    <div class="rc-signatory-name text-uppercase">
+                        {{ institution.signatory_name|default:"SAQAFI FULAIL SURAJ" }}
+                    </div>
+                    <div class="rc-signatory-title text-uppercase">
+                        {{ institution.signatory_title|default:"(UMMU HABEEBA VIRTUAL CAMPUS)" }}
+                    </div>
+                </div>
+
+                <!-- Footer Logos Bar -->
+                <div class="pt-3 border-top border-dark border-1">
+                    <div class="d-flex align-items-center justify-content-around flex-wrap gap-2 text-center">
+                        {% if institution.footer_logo1 %}
+                            <img src="{{ institution.footer_logo1.url }}" alt="Footer Logo 1" style="max-height: 50px; width: auto;">
+                        {% else %}
+                            <div class="rc-footer-badge">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#e91e63"><path d="M12 2L2 7l10 5l10-5l-10-5zm0 9l-8-4v6l8 4l8-4v-6l-8 4z"/></svg>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">MEN'S MASTERY</div>
+                                    <div class="text-muted" style="font-size: 0.6rem;">Holistic Life School</div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if institution.footer_logo2 %}
+                            <img src="{{ institution.footer_logo2.url }}" alt="Footer Logo 2" style="max-height: 50px; width: auto;">
+                        {% else %}
+                            <div class="rc-footer-badge">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#ff9800"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">NEXT GEN-IUS</div>
+                                    <div class="text-muted" style="font-size: 0.6rem;">Bright Minds Institute</div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if institution.footer_logo3 %}
+                            <img src="{{ institution.footer_logo3.url }}" alt="Footer Logo 3" style="max-height: 50px; width: auto;">
+                        {% else %}
+                            <div class="rc-footer-badge">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#00bcd4"><path d="M12 3c-4.97 0-9 4.03-9 9c0 2.12.74 4.07 1.97 5.61L4.35 19.4a1 1 0 0 0 1.41 1.41l1.82-1.82A8.94 8.94 0 0 0 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 14a5 5 0 1 1 0-10a5 5 0 0 1 0 10z"/></svg>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">MIND-PRO</div>
+                                    <div class="text-muted" style="font-size: 0.6rem;">School of Training</div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if institution.footer_logo4 %}
+                            <img src="{{ institution.footer_logo4.url }}" alt="Footer Logo 4" style="max-height: 50px; width: auto;">
+                        {% else %}
+                            <div class="rc-footer-badge">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#9c27b0"><path d="M12 3L1 9l11 6l9-4.91V17h2V9L12 3z"/></svg>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">UMMU HABEEBA</div>
+                                    <div class="text-muted" style="font-size: 0.6rem;">Virtual Campus</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="p-3 bg-white text-center d-print-none border-top">
+                <a href="{% url 'results_app:student_result' institution.id %}" class="btn btn-outline-secondary px-3 me-2 rounded-pill fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i> Check Another
+                </a>
+                <button onclick="downloadReportCardAsJPEG(event)" class="btn btn-warning px-4 rounded-pill fw-bold shadow-sm me-2 text-dark">
+                    <i class="bi bi-file-image me-1"></i> Download JPEG Image
+                </button>
+                <button onclick="window.print()" class="btn btn-success px-4 rounded-pill fw-bold shadow-sm">
+                    <i class="bi bi-printer me-1"></i> Print Report Card
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setCardTheme(themeName) {
+    const rcBody = document.getElementById('rcBodyGrad');
+    if (rcBody) {
+        rcBody.className = 'rc-gold-body ' + themeName;
+    }
+}
+
+function downloadReportCardAsJPEG(e) {
+    const cardElement = document.getElementById('reportCardToCapture');
+    if (!cardElement) return;
+
+    const btn = e.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Generating JPEG...';
+    btn.disabled = true;
+
+    // Temporarily hide actions footer during capture
+    const actionFooter = cardElement.querySelector('.d-print-none');
+    if (actionFooter) actionFooter.style.display = 'none';
+
+    html2canvas(cardElement, {
+        scale: 3, // High-res 3x DPI render
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false
+    }).then(canvas => {
+        if (actionFooter) actionFooter.style.display = 'block';
+        
+        const imageURI = canvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        const sName = "{{ student.name|slugify }}" || "student";
+        const regNo = "{{ student.register_number|slugify }}" || "report_card";
+        link.download = `Report_Card_${sName}_${regNo}.jpg`;
+        link.href = imageURI;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }).catch(err => {
+        if (actionFooter) actionFooter.style.display = 'block';
+        console.error("Error creating JPEG:", err);
+        alert("Failed to create JPEG. You can use Print -> Save as PDF/Image as fallback.");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+</script>
+
+{% else %}
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card shadow-sm border-primary">
-            <div class="card-header bg-primary text-white">
-                <div class="text-center border-bottom border-light pb-2 mb-3">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white p-4">
+                <div class="text-center pb-2 mb-3 border-bottom border-white border-opacity-25">
                     {% if institution.logo %}
-                        <img src="{{ institution.logo.url }}" alt="Logo" style="height: 80px; width: auto; object-fit: contain; margin-bottom: 15px; border-radius: 8px; background: white; padding: 5px;">
+                        <img src="{{ institution.logo.url }}" alt="Logo" style="height: 75px; width: auto; object-fit: contain;" class="mb-2 bg-white p-1 rounded-3">
                         <br>
                     {% endif %}
-                    <h2 class="text-uppercase fw-bold mb-0 text-warning" style="font-family: 'Georgia', serif; letter-spacing: 1px;">{{ institution.name }}</h2>
+                    <h2 class="text-uppercase fw-bold mb-0 text-warning" style="font-family: 'Outfit', serif; letter-spacing: 1px;">{{ institution.name }}</h2>
                 </div>
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
                     <div>
                         <h4 class="mb-0 fw-bold text-uppercase">{{ student.name }}</h4>
                         {% if student.fathers_name %}
-                            <small class="text-light text-uppercase">Father's Name: {{ student.fathers_name }}</small>
+                            <small class="text-light text-uppercase opacity-75">Father's Name: {{ student.fathers_name }}</small>
                         {% endif %}
                     </div>
                     <div class="text-end text-sm-start">
-                        <span>Reg: {{ student.register_number }} | Class: {{ student.student_class }}</span>
+                        <span class="badge bg-white text-primary fs-6">Reg: {{ student.register_number }} | Class: {{ student.student_class }}</span>
                         {% if student.division %}
-                            <br><span class="text-uppercase">Division: {{ student.division }}</span>
+                            <br><span class="badge bg-warning text-dark mt-1">Division: {{ student.division }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -96,8 +576,8 @@
             <div class="card-body p-0">
                 {% if results_by_exam %}
                     {% for exam_name, exam_data in results_by_exam.items %}
-                    <div class="bg-light px-3 py-2 border-bottom border-top mt-{% if not forloop.first %}4{% else %}0{% endif %}">
-                        <h5 class="mb-0 text-primary fw-bold text-center py-1">{{ exam_name }}</h5>
+                    <div class="bg-light px-4 py-3 border-bottom border-top">
+                        <h5 class="mb-0 text-primary fw-bold text-center">{{ exam_name }}</h5>
                     </div>
                     {% if institution.grading_system == 'PASS_FAIL' %}
                         <div class="p-5 text-center">
@@ -109,18 +589,18 @@
                         </div>
                     {% else %}
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                             <tr>
-                                <th>Subject</th>
-                                <th>Marks</th>
+                                <th class="ps-4">Subject</th>
+                                <th class="pe-4 text-end">Marks / Grade</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for r in exam_data.marks %}
                             <tr>
-                                <td>{{ r.subject.name }}</td>
-                                <td>
+                                <td class="ps-4 fw-bold">{{ r.subject.name }}</td>
+                                <td class="pe-4 text-end">
                                     <span class="badge bg-success fs-6">{{ r.marks|clean_mark }}</span>
                                     {% if institution.grading_system != 'PERCENTAGE' %}
                                         {% if r.marks < r.subject.max_marks|multiply:0.4 %}
@@ -133,14 +613,14 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="2" class="text-center text-muted">No results found for this exam.</td>
+                                <td colspan="2" class="text-center text-muted py-4">No results found for this exam.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
-                        <tfoot class="table-group-divider">
+                        <tfoot class="table-light border-top">
                             <tr>
-                                <th><strong>Total Marks</strong></th>
-                                <th>
+                                <th class="ps-4"><strong>Total Marks</strong></th>
+                                <th class="pe-4 text-end">
                                     <span class="badge bg-primary fs-5">{{ exam_data.total|clean_mark }}</span>
                                     {% if institution.grading_system == 'SUNNI_BOARD' or institution.grading_system == 'GULF_SECTOR' or institution.grading_system == 'HADIYA' %}
                                         {% if exam_data.has_failed_subject %}
@@ -161,11 +641,12 @@
                 {% endif %}
             </div>
             <div class="card-footer bg-white text-center py-3 d-print-none">
-                <a href="{% url 'results_app:student_result' institution.id %}" class="btn btn-outline-primary px-4 me-2">Check Another</a>
-                <button onclick="window.print()" class="btn btn-secondary px-4"><i class="bi bi-printer"></i> Print</button>
+                <a href="{% url 'results_app:student_result' institution.id %}" class="btn btn-outline-primary px-4 me-2 rounded-pill">Check Another</a>
+                <button onclick="window.print()" class="btn btn-secondary px-4 rounded-pill"><i class="bi bi-printer"></i> Print</button>
             </div>
         </div>
     </div>
 </div>
+{% endif %}
 {% endif %}
 {% endblock %}

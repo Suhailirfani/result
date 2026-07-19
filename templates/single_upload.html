@@ -36,13 +36,22 @@
                             {% if form.exam.errors %}<div class="text-danger small mt-1">{{ form.exam.errors|join:", " }}</div>{% endif %}
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">{{ form.marks.label }}</label>
-                            {{ form.marks }}
-                            {% if form.marks.errors %}<div class="text-danger small mt-1">{{ form.marks.errors|join:", " }}</div>{% endif %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.marks.label }}</label>
+                                {{ form.marks }}
+                                {% if form.marks.errors %}<div class="text-danger small mt-1">{{ form.marks.errors|join:", " }}</div>{% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">{{ form.ce_marks.label }}</label>
+                                {{ form.ce_marks }}
+                                {% if form.ce_marks.errors %}<div class="text-danger small mt-1">{{ form.ce_marks.errors|join:", " }}</div>{% endif %}
+                                <div class="form-text small">Course Work / CE Marks</div>
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-success w-100 mt-2">Save Result</button>
+                        <button type="submit" class="btn btn-success w-100 mt-2 fw-bold">Save Result</button>
                     </form>
             </div>
         </div>

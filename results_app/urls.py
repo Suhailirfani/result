@@ -22,6 +22,7 @@ urlpatterns = [
     path('staff/class/<str:class_num>/ranklist/', views.rank_list_view, name='rank_list'),
     path('staff/upload/single/', views.single_upload_view, name='single_upload'),
     path('staff/upload/bulk/', views.bulk_upload_view, name='bulk_upload'),
+    path('staff/download-bulk-template/', views.download_bulk_template_view, name='download_bulk_template'),
     
     path('staff/add-student/', views.add_student_view, name='add_student'),
     path('staff/edit-student/<int:student_id>/', views.edit_student_view, name='edit_student'),

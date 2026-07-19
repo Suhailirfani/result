@@ -141,9 +141,12 @@ def student_result_view(request, inst_id):
                 for r in results:
                     exam_name = r.exam.name if r.exam else "General Exam"
                     if exam_name not in results_by_exam:
-                        results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0, 'has_failed_subject': False}
+                        results_by_exam[exam_name] = {'marks': [], 'total': 0, 'max_total': 0, 'total_exam': 0, 'total_ce': 0, 'has_failed_subject': False}
                     results_by_exam[exam_name]['marks'].append(r)
-                    results_by_exam[exam_name]['total'] += r.marks
+                    score_val = r.total_score if institution.grading_system == 'UMMU_HABEEBA' else r.marks
+                    results_by_exam[exam_name]['total'] += score_val
+                    results_by_exam[exam_name]['total_exam'] += (r.marks or 0)
+                    results_by_exam[exam_name]['total_ce'] += (r.ce_marks or 0)
                     results_by_exam[exam_name]['max_total'] += r.subject.max_marks
                     
                     if institution.grading_system == 'SUNNI_BOARD' and r.marks < 40:
@@ -151,6 +154,8 @@ def student_result_view(request, inst_id):
                     elif institution.grading_system == 'GULF_SECTOR' and r.marks < (r.subject.max_marks * 0.3):
                         results_by_exam[exam_name]['has_failed_subject'] = True
                     elif institution.grading_system == 'HADIYA' and r.marks < (r.subject.max_marks * 0.4):
+                        results_by_exam[exam_name]['has_failed_subject'] = True
+                    elif institution.grading_system == 'UMMU_HABEEBA' and score_val < (r.subject.max_marks * 0.4):
                         results_by_exam[exam_name]['has_failed_subject'] = True
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
@@ -209,15 +214,18 @@ def class_result_view(request, class_num):
     failed_count = 0
     for s in students:
         student_results = Result.objects.filter(student=s, exam=selected_exam)
-        res_dict = {r.subject.name: r.marks for r in student_results}
+        res_dict = {r.subject.name: r for r in student_results}
         
         has_failed_subject = False
         has_any_mark = False
         marks_list = []
+        student_total_score = 0
         for sub in subjects:
-            mark = res_dict.get(sub.name, "-")
-            marks_list.append({'mark': mark, 'subject': sub})
-            if mark != "-":
+            r_obj = res_dict.get(sub.name)
+            if r_obj is not None:
+                mark = r_obj.total_score if institution.grading_system == 'UMMU_HABEEBA' else r_obj.marks
+                student_total_score += mark
+                marks_list.append({'mark': mark, 'subject': sub})
                 has_any_mark = True
                 if institution.grading_system == 'SUNNI_BOARD' and mark < 40:
                     has_failed_subject = True
@@ -225,14 +233,18 @@ def class_result_view(request, class_num):
                     has_failed_subject = True
                 elif institution.grading_system == 'HADIYA' and mark < (sub.max_marks * 0.4):
                     has_failed_subject = True
+                elif institution.grading_system == 'UMMU_HABEEBA' and mark < (sub.max_marks * 0.4):
+                    has_failed_subject = True
                 elif institution.grading_system == '10_POINT' and mark < (sub.max_marks * 0.33):
                     has_failed_subject = True
                 elif institution.grading_system == '9_POINT' and mark < (sub.max_marks * 0.30):
                     has_failed_subject = True
                 elif institution.grading_system == 'PERCENTAGE' and mark < (sub.max_marks * 0.33):
                     has_failed_subject = True
+            else:
+                marks_list.append({'mark': "-", 'subject': sub})
             
-        data.append({'student': s, 'marks': marks_list, 'total': s.total_marks or 0, 'max_total': max_total, 'has_failed_subject': has_failed_subject})
+        data.append({'student': s, 'marks': marks_list, 'total': student_total_score, 'max_total': max_total, 'has_failed_subject': has_failed_subject})
         if has_any_mark:
             if has_failed_subject:
                 failed_count += 1
@@ -381,6 +393,61 @@ def single_upload_view(request):
     return render(request, 'single_upload.html', {'form': form})
 
 @login_required
+def download_bulk_template_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+        
+    institution = request.user.institution
+    import io
+    import pandas as pd
+    from django.http import HttpResponse
+
+    if institution.grading_system == 'UMMU_HABEEBA':
+        data = {
+            'Register Number': ['UH1001', 'UH1002'],
+            'Name': ['RAFEENA HABEEBA', 'FATIMA ZAHRA'],
+            'Class': [1, 1],
+            'Class Name': ['NOOR', 'NOOR'],
+            'Batch': ['SECOND', 'SECOND'],
+            'Year': ['2025', '2025'],
+            "Father's Name": ['', ''],
+            'Division': ['', ''],
+            'FATHUL MUEEN (Exam)': [40, 38],
+            'FATHUL MUEEN (CE)': [47, 45],
+            'AZKIYA (Exam)': [28, 30],
+            'AZKIYA (CE)': [48, 46],
+            'THAJVEED (Exam)': [40, 42],
+            'THAJVEED (CE)': [46, 48],
+        }
+        filename = "Ummu_Habeeba_Bulk_Marks_Template.xlsx"
+    else:
+        data = {
+            'Register Number': ['101', '102'],
+            'Name': ['John Doe', 'Jane Smith'],
+            'Class': [5, 5],
+            "Father's Name": ['Richard Doe', 'Robert Smith'],
+            'Division': ['A', 'A'],
+            'Mathematics': [85, 92],
+            'Science': [90, 88],
+            'English': [78, 85],
+        }
+        filename = "Bulk_Marks_Template.xlsx"
+
+    df = pd.DataFrame(data)
+    
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Marks Template')
+        
+    buffer.seek(0)
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+@login_required
 def bulk_upload_view(request):
     if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
         return redirect('results_app:pending_approval')
@@ -419,14 +486,37 @@ def bulk_upload_view(request):
                     
                 fathers_name_col = "Father's Name" if "Father's Name" in header else None
                 division_col = "Division" if "Division" in header else None
+                class_name_col = "Class Name" if "Class Name" in header else None
+                batch_col = "Batch" if "Batch" in header else None
+                year_col = "Year" if "Year" in header else None
                 
-                # Determine which columns are subjects
+                # Fixed metadata columns
                 fixed_cols = ['Register Number', 'Name', 'Class']
                 if fathers_name_col: fixed_cols.append(fathers_name_col)
                 if division_col: fixed_cols.append(division_col)
+                if class_name_col: fixed_cols.append(class_name_col)
+                if batch_col: fixed_cols.append(batch_col)
+                if year_col: fixed_cols.append(year_col)
                     
-                subjects = [c for c in header if c not in fixed_cols and "Unnamed" not in str(c)]
-                    
+                mark_cols = [c for c in header if c not in fixed_cols and "Unnamed" not in str(c)]
+                
+                # Classify subject columns by (column_name, subject_name, mark_type)
+                col_mapping = []
+                for c in mark_cols:
+                    lower_c = c.lower()
+                    if lower_c.endswith('(exam)') or lower_c.endswith('_exam') or lower_c.endswith(' exam'):
+                        sname = c.rsplit('(', 1)[0].rsplit('_', 1)[0].strip()
+                        if sname.lower().endswith(' exam'):
+                            sname = sname[:-5].strip()
+                        col_mapping.append((c, sname, 'exam'))
+                    elif lower_c.endswith('(ce)') or lower_c.endswith('_ce') or lower_c.endswith(' ce') or 'course work' in lower_c:
+                        sname = c.rsplit('(', 1)[0].rsplit('_', 1)[0].strip()
+                        if sname.lower().endswith(' ce'):
+                            sname = sname[:-3].strip()
+                        col_mapping.append((c, sname, 'ce'))
+                    else:
+                        col_mapping.append((c, c.strip(), 'general'))
+
                 for index, row in df.iterrows():
                     reg = row['Register Number'].strip()
                     if reg == 'nan' or not reg: continue
@@ -441,6 +531,9 @@ def bulk_upload_view(request):
                     name = row['Name'].strip() if str(row['Name']) != 'nan' else ''
                     fathers_name = row[fathers_name_col].strip() if fathers_name_col and str(row[fathers_name_col]) != 'nan' else None
                     division = row[division_col].strip() if division_col and str(row[division_col]) != 'nan' else None
+                    class_name = row[class_name_col].strip() if class_name_col and str(row[class_name_col]) != 'nan' else None
+                    batch = row[batch_col].strip() if batch_col and str(row[batch_col]) != 'nan' else None
+                    year = row[year_col].strip() if year_col and str(row[year_col]) != 'nan' else None
                     
                     student, _ = Student.objects.get_or_create(
                         institution=institution,
@@ -449,7 +542,10 @@ def bulk_upload_view(request):
                             'name': name, 
                             'student_class': class_num,
                             'fathers_name': fathers_name,
-                            'division': division
+                            'division': division,
+                            'class_name': class_name,
+                            'batch': batch,
+                            'year': year
                         }
                     )
                     
@@ -461,26 +557,54 @@ def bulk_upload_view(request):
                     if division and student.division != division:
                         student.division = division
                         updated = True
+                    if class_name and student.class_name != class_name:
+                        student.class_name = class_name
+                        updated = True
+                    if batch and student.batch != batch:
+                        student.batch = batch
+                        updated = True
+                    if year and student.year != year:
+                        student.year = year
+                        updated = True
                     if updated:
                         student.save()
                     
-                    # Update marks
-                    for sub_name in subjects:
-                        # Fetch / Create subject for this specific student's class
+                    # Group marks by subject
+                    subject_marks = {}
+                    for col_name, sub_name, mtype in col_mapping:
+                        val_str = str(row[col_name]).strip()
+                        if val_str and val_str != 'nan':
+                            try:
+                                fval = float(val_str)
+                                if sub_name not in subject_marks:
+                                    subject_marks[sub_name] = {}
+                                if mtype == 'exam' or mtype == 'general':
+                                    subject_marks[sub_name]['marks'] = fval
+                                elif mtype == 'ce':
+                                    subject_marks[sub_name]['ce_marks'] = fval
+                            except ValueError:
+                                pass
+
+                    for sub_name, marks_dict in subject_marks.items():
                         sub, _ = Subject.objects.get_or_create(institution=institution, name=sub_name.strip(), student_class=class_num)
                         
-                        mark_val = str(row[sub_name]).strip()
-                        if mark_val and mark_val != 'nan':
-                            try:
-                                float_mark = float(mark_val)
-                                Result.objects.update_or_create(
-                                    student=student,
-                                    subject=sub,
-                                    exam=exam_obj,
-                                    defaults={'marks': float_mark}
-                                )
-                            except ValueError:
-                                pass # Skip invalid mark values
+                        existing_res = Result.objects.filter(student=student, subject=sub, exam=exam_obj).first()
+                        defaults = {}
+                        if 'marks' in marks_dict:
+                            defaults['marks'] = marks_dict['marks']
+                        elif existing_res is None:
+                            defaults['marks'] = 0.0
+
+                        if 'ce_marks' in marks_dict:
+                            defaults['ce_marks'] = marks_dict['ce_marks']
+
+                        if defaults:
+                            Result.objects.update_or_create(
+                                student=student,
+                                subject=sub,
+                                exam=exam_obj,
+                                defaults=defaults
+                            )
                                 
                 messages.success(request, 'Bulk upload successful!')
                 return redirect('results_app:staff_dashboard')
@@ -717,20 +841,22 @@ def edit_student_marks_view(request, class_num, student_id, exam_id):
     if request.method == 'POST':
         for subject in subjects:
             mark_value = request.POST.get(f'subject_{subject.id}', '').strip()
-            if mark_value:
+            ce_value = request.POST.get(f'ce_{subject.id}', '').strip()
+            if mark_value or ce_value:
                 try:
-                    float_mark = float(mark_value)
+                    float_mark = float(mark_value) if mark_value else 0.0
+                    float_ce = float(ce_value) if ce_value else 0.0
                     Result.objects.update_or_create(
                         student=student,
                         subject=subject,
                         exam=exam,
-                        defaults={'marks': float_mark}
+                        defaults={'marks': float_mark, 'ce_marks': float_ce}
                     )
                 except ValueError:
                     messages.error(request, f"Invalid mark entered for {subject.name}")
                     return redirect('results_app:edit_student_marks', class_num=class_num, student_id=student.id, exam_id=exam.id)
             else:
-                # If mark is empty, delete it if it exists
+                # If both marks are empty, delete it if it exists
                 if subject.id in result_dict:
                     result_dict[subject.id].delete()
                     
@@ -741,9 +867,11 @@ def edit_student_marks_view(request, class_num, student_id, exam_id):
     subject_marks = []
     for subject in subjects:
         mark = ""
+        ce_mark = ""
         if subject.id in result_dict:
             mark = result_dict[subject.id].marks
-        subject_marks.append({'subject': subject, 'mark': mark})
+            ce_mark = result_dict[subject.id].ce_marks
+        subject_marks.append({'subject': subject, 'mark': mark, 'ce_mark': ce_mark})
         
     return render(request, 'edit_marks.html', {
         'student': student,
@@ -781,26 +909,31 @@ def enter_marks_view(request, class_num):
         
         for student in students:
             existing_mark = ''
+            existing_ce_mark = ''
             if student.current_results:
                 existing_mark = student.current_results[0].marks
+                existing_ce_mark = student.current_results[0].ce_marks
             student_data.append({
                 'student': student,
-                'existing_mark': existing_mark
+                'existing_mark': existing_mark,
+                'existing_ce_mark': existing_ce_mark
             })
             
     if request.method == 'POST' and selected_exam and selected_subject:
         for student_info in student_data:
             student = student_info['student']
             mark_value = request.POST.get(f'mark_{student.id}', '').strip()
+            ce_value = request.POST.get(f'ce_mark_{student.id}', '').strip()
             
-            if mark_value:
+            if mark_value or ce_value:
                 try:
-                    float_mark = float(mark_value)
+                    float_mark = float(mark_value) if mark_value else 0.0
+                    float_ce = float(ce_value) if ce_value else 0.0
                     Result.objects.update_or_create(
                         student=student,
                         subject=selected_subject,
                         exam=selected_exam,
-                        defaults={'marks': float_mark}
+                        defaults={'marks': float_mark, 'ce_marks': float_ce}
                     )
                 except ValueError:
                     messages.error(request, f"Invalid mark entered for {student.name}")

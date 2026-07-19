@@ -10,6 +10,7 @@ class Institution(models.Model):
         ('PASS_FAIL', 'Pass / Fail Only'),
         ('GULF_SECTOR', 'Gulf Sector System'),
         ('HADIYA', 'Hadiya Grading System'),
+        ('UMMU_HABEEBA', 'Ummu Habeeba Virtual Campus (CE + Exam)'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='institution')
     name = models.CharField(max_length=255)
@@ -19,6 +20,12 @@ class Institution(models.Model):
     grading_system = models.CharField(max_length=20, choices=GRADING_CHOICES, default='PERCENTAGE')
     results_locked = models.BooleanField(default=False)
     logo = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
+    signatory_name = models.CharField(max_length=255, default='SAQAFI FULAIL SURAJ', blank=True, null=True)
+    signatory_title = models.CharField(max_length=255, default='(UMMU HABEEBA VIRTUAL CAMPUS)', blank=True, null=True)
+    footer_logo1 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
+    footer_logo2 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
+    footer_logo3 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
+    footer_logo4 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({'Approved' if self.is_approved else 'Pending'})"
@@ -30,6 +37,9 @@ class Student(models.Model):
     register_number = models.CharField(max_length=50, db_index=True)
     student_class = models.IntegerField()  # 1 to 10
     division = models.CharField(max_length=10, blank=True, null=True) # e.g. 'A', 'B'
+    class_name = models.CharField(max_length=50, blank=True, null=True) # e.g. 'NOOR'
+    batch = models.CharField(max_length=100, blank=True, null=True) # e.g. 'SECOND'
+    year = models.CharField(max_length=50, blank=True, null=True) # e.g. '2025'
     
     class Meta:
         unique_together = ('institution', 'register_number')
@@ -65,6 +75,13 @@ class Result(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='results')
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='results', null=True)
     marks = models.FloatField()
+    ce_marks = models.FloatField(default=0.0, blank=True, null=True)
+
+    @property
+    def total_score(self):
+        exam_val = self.marks or 0.0
+        ce_val = self.ce_marks or 0.0
+        return exam_val + ce_val
 
     class Meta:
         unique_together = ('student', 'subject', 'exam')

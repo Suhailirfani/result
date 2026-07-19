@@ -23,12 +23,17 @@ class StudentSearchForm(forms.Form):
 class SingleUploadForm(forms.ModelForm):
     class Meta:
         model = Result
-        fields = ['student', 'subject', 'exam', 'marks']
+        fields = ['student', 'subject', 'exam', 'marks', 'ce_marks']
+        labels = {
+            'marks': 'Exam Marks',
+            'ce_marks': 'CE / Course Work Marks',
+        }
         widgets = {
             'student': forms.Select(attrs={'class': 'form-control'}),
             'subject': forms.Select(attrs={'class': 'form-control'}),
             'exam': forms.Select(attrs={'class': 'form-control'}),
-            'marks': forms.NumberInput(attrs={'class': 'form-control'}),
+            'marks': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Exam Marks'}),
+            'ce_marks': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Course Work / CE Marks'}),
         }
 
 class BulkUploadForm(forms.Form):
@@ -67,13 +72,16 @@ class StudentBulkUploadForm(forms.Form):
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
-        fields = ['name', 'fathers_name', 'register_number', 'student_class', 'division']
+        fields = ['name', 'fathers_name', 'register_number', 'student_class', 'division', 'class_name', 'batch', 'year']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Student Name'}),
             'fathers_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "Enter Father's Name"}),
             'register_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Register Number'}),
             'student_class': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 5'}),
             'division': forms.TextInput(attrs={'class': 'form-control', 'placeholder': "e.g. A"}),
+            'class_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. NOOR'}),
+            'batch': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. SECOND'}),
+            'year': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2025'}),
         }
 
 class SubjectForm(forms.ModelForm):
@@ -89,13 +97,19 @@ class SubjectForm(forms.ModelForm):
 class InstitutionEditForm(forms.ModelForm):
     class Meta:
         model = Institution
-        fields = ['name', 'phone_number', 'grading_system', 'results_locked', 'logo']
+        fields = ['name', 'phone_number', 'grading_system', 'results_locked', 'logo', 'signatory_name', 'signatory_title', 'footer_logo1', 'footer_logo2', 'footer_logo3', 'footer_logo4']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
             'grading_system': forms.Select(attrs={'class': 'form-control'}),
             'results_locked': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'logo': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/png, image/jpeg'}),
+            'signatory_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. SAQAFI FULAIL SURAJ'}),
+            'signatory_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. (UMMU HABEEBA VIRTUAL CAMPUS)'}),
+            'footer_logo1': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/png, image/jpeg'}),
+            'footer_logo2': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/png, image/jpeg'}),
+            'footer_logo3': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/png, image/jpeg'}),
+            'footer_logo4': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/png, image/jpeg'}),
         }
 
 class ExamForm(forms.ModelForm):
