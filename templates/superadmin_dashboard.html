@@ -2,19 +2,19 @@
 
 {% block content %}
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
-    <h2 class="mb-0">Superadmin Dashboard</h2>
+    <h2 class="mb-0 fw-bold">Superadmin Dashboard</h2>
 </div>
 
 <div class="row g-4 mb-4">
     <!-- Left Column: Pending Applications -->
     <div class="col-lg-6">
         <div class="card shadow-sm h-100 border-warning">
-            <div class="card-header bg-warning bg-opacity-10">
-                <h5 class="mb-0 text-warning-emphasis"><i class="bi bi-hourglass-split me-2"></i>Pending Applications</h5>
+            <div class="card-header bg-warning bg-opacity-10 py-3">
+                <h5 class="mb-0 text-warning-emphasis fw-bold"><i class="bi bi-hourglass-split me-2"></i>Pending Applications</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>Institution</th>
@@ -24,12 +24,18 @@
                         <tbody>
                             {% for inst in pending_institutions %}
                             <tr>
-                                <td class="align-middle">
-                                    <div class="fw-bold">{{ inst.name }}</div>
+                                <td>
+                                    <div class="fw-bold fs-6">{{ inst.name }}</div>
                                     <div class="small text-muted">{{ inst.user.username }} | {{ inst.user.email }}</div>
+                                    <div class="small text-secondary fw-semibold">
+                                        <i class="bi bi-clock me-1"></i> Applied: {{ inst.created_at|default:inst.user.date_joined|date:"d M Y, h:i A" }}
+                                    </div>
                                     {% if inst.phone_number %}<div class="small text-muted"><i class="bi bi-telephone"></i> {{ inst.phone_number }}</div>{% endif %}
                                 </td>
-                                <td class="align-middle text-end">
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info mb-1" data-bs-toggle="modal" data-bs-target="#instModal{{ inst.id }}" title="View Full Details">
+                                        <i class="bi bi-eye-fill me-1"></i> View Details
+                                    </button>
                                     <form method="POST" action="{% url 'results_app:approve_institution' inst.id %}" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-success mb-1">Approve</button>
@@ -40,6 +46,10 @@
                                     </form>
                                 </td>
                             </tr>
+
+                            <!-- View Details Modal for Pending Institution -->
+                            {% include 'includes/institution_modal.html' with inst=inst %}
+
                             {% empty %}
                             <tr>
                                 <td colspan="2" class="text-center text-muted py-4">No pending applications.</td>
@@ -55,12 +65,12 @@
     <!-- Right Column: Approved Institutions -->
     <div class="col-lg-6">
         <div class="card shadow-sm h-100 border-success">
-            <div class="card-header bg-success bg-opacity-10">
-                <h5 class="mb-0 text-success-emphasis"><i class="bi bi-check-circle me-2"></i>Approved Institutions</h5>
+            <div class="card-header bg-success bg-opacity-10 py-3">
+                <h5 class="mb-0 text-success-emphasis fw-bold"><i class="bi bi-check-circle me-2"></i>Approved Institutions</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>Institution</th>
@@ -70,22 +80,32 @@
                         <tbody>
                             {% for inst in approved_institutions %}
                             <tr>
-                                <td class="align-middle">
-                                    <div class="fw-bold">{{ inst.name }}</div>
-                                    <div class="small text-muted">{{ inst.user.username }}</div>
+                                <td>
+                                    <div class="fw-bold fs-6">{{ inst.name }}</div>
+                                    <div class="small text-muted">{{ inst.user.username }} | {{ inst.user.email }}</div>
+                                    <div class="small text-secondary fw-semibold">
+                                        <i class="bi bi-clock me-1"></i> Applied: {{ inst.created_at|default:inst.user.date_joined|date:"d M Y, h:i A" }}
+                                    </div>
                                 </td>
-                                <td class="align-middle text-end">
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info mb-1" data-bs-toggle="modal" data-bs-target="#instModal{{ inst.id }}" title="View Full Details">
+                                        <i class="bi bi-eye-fill me-1"></i> Details
+                                    </button>
                                     <form method="POST" action="{% url 'results_app:suspend_institution' inst.id %}" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-outline-warning mb-1" title="Suspend this account">Suspend</button>
                                     </form>
                                     {% if inst.phone_number %}
-                                        <a href="https://wa.me/91{{ inst.phone_number }}?text=Hello%20from%20Nano%20Results!%20Your%20institution%20'{{ inst.name }}'%20has%20been%20approved.%20You%20can%20now%20log%20in%20and%20start%20managing%20results." target="_blank" class="btn btn-sm btn-outline-success ms-1 mb-1" title="Send WhatsApp Message">
+                                        <a href="https://wa.me/91{{ inst.phone_number }}?text=Hello%20from%20Nano%20Results!%20Your%20institution%20'{{ inst.name }}'%20has%20been%20approved." target="_blank" class="btn btn-sm btn-outline-success ms-1 mb-1" title="Send WhatsApp Message">
                                             <i class="bi bi-whatsapp"></i> WhatsApp
                                         </a>
                                     {% endif %}
                                 </td>
                             </tr>
+
+                            <!-- View Details Modal for Approved Institution -->
+                            {% include 'includes/institution_modal.html' with inst=inst %}
+
                             {% empty %}
                             <tr>
                                 <td colspan="2" class="text-center text-muted py-4">No approved institutions yet.</td>
@@ -103,28 +123,37 @@
     <!-- Full Width: Rejected Applications -->
     <div class="col-md-12">
         <div class="card shadow-sm border-danger">
-            <div class="card-header bg-danger text-white">
-                <h5 class="mb-0"><i class="bi bi-x-circle me-2"></i>Rejected Applications</h5>
+            <div class="card-header bg-danger text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-x-circle me-2"></i>Rejected Applications</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>Institution Name</th>
                                 <th>Admin Details</th>
+                                <th>Applied Date</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for inst in rejected_institutions %}
                             <tr>
-                                <td class="align-middle fw-bold">{{ inst.name }}</td>
-                                <td class="align-middle">
+                                <td class="fw-bold fs-6">{{ inst.name }}</td>
+                                <td>
                                     {{ inst.user.username }} ({{ inst.user.email }})<br>
                                     <small class="text-muted"><i class="bi bi-telephone-fill"></i> {{ inst.phone_number|default:"Not provided" }}</small>
                                 </td>
-                                <td class="align-middle text-end">
+                                <td>
+                                    <small class="text-secondary fw-semibold">
+                                        <i class="bi bi-clock me-1"></i> {{ inst.created_at|default:inst.user.date_joined|date:"d M Y, h:i A" }}
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal" data-bs-target="#instModal{{ inst.id }}" title="View Full Details">
+                                        <i class="bi bi-eye-fill me-1"></i> Details
+                                    </button>
                                     <form method="POST" action="{% url 'results_app:approve_institution' inst.id %}" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-success">Approve</button>
@@ -135,9 +164,13 @@
                                     </form>
                                 </td>
                             </tr>
+
+                            <!-- View Details Modal for Rejected Institution -->
+                            {% include 'includes/institution_modal.html' with inst=inst %}
+
                             {% empty %}
                             <tr>
-                                <td colspan="3" class="text-center text-muted py-4">No rejected applications.</td>
+                                <td colspan="4" class="text-center text-muted py-4">No rejected applications.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

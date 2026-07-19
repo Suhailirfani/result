@@ -10,7 +10,7 @@ class Institution(models.Model):
         ('PASS_FAIL', 'Pass / Fail Only'),
         ('GULF_SECTOR', 'Gulf Sector System'),
         ('HADIYA', 'Hadiya Grading System'),
-        ('UMMU_HABEEBA', 'Ummu Habeeba Virtual Campus (CE + Exam)'),
+        ('UMMU_HABEEBA', 'Integrated Evaluation System (CE + Written Exam)'),
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='institution')
     name = models.CharField(max_length=255)
@@ -20,12 +20,13 @@ class Institution(models.Model):
     grading_system = models.CharField(max_length=20, choices=GRADING_CHOICES, default='PERCENTAGE')
     results_locked = models.BooleanField(default=False)
     logo = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
-    signatory_name = models.CharField(max_length=255, default='SAQAFI FULAIL SURAJ', blank=True, null=True)
-    signatory_title = models.CharField(max_length=255, default='(UMMU HABEEBA VIRTUAL CAMPUS)', blank=True, null=True)
+    signatory_name = models.CharField(max_length=255, default='Authorized Signatory', blank=True, null=True)
+    signatory_title = models.CharField(max_length=255, default='(Examination Controller)', blank=True, null=True)
     footer_logo1 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
     footer_logo2 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
     footer_logo3 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
     footer_logo4 = models.ImageField(upload_to='institution_logos/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} ({'Approved' if self.is_approved else 'Pending'})"

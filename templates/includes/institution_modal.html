@@ -1,0 +1,132 @@
+<!-- Institution Details Modal -->
+<div class="modal fade" id="instModal{{ inst.id }}" tabindex="-1" aria-labelledby="instModalLabel{{ inst.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content text-start border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-building fs-4 text-warning"></i>
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold" id="instModalLabel{{ inst.id }}">{{ inst.name }}</h5>
+                        <small class="text-light opacity-75">Registered Institution Details</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <label class="text-muted small fw-bold text-uppercase d-block mb-1">Date & Time Applied</label>
+                            <div class="fw-bold text-dark fs-6">
+                                <i class="bi bi-clock-history text-primary me-1"></i>
+                                {{ inst.created_at|default:inst.user.date_joined|date:"F d, Y \a\t g:i:s A" }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border h-100">
+                            <label class="text-muted small fw-bold text-uppercase d-block mb-1">Application Status</label>
+                            {% if inst.is_approved %}
+                                <span class="badge bg-success fs-6"><i class="bi bi-check-circle-fill me-1"></i> Approved Account</span>
+                            {% elif inst.is_rejected %}
+                                <span class="badge bg-danger fs-6"><i class="bi bi-x-circle-fill me-1"></i> Rejected Application</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark fs-6"><i class="bi bi-hourglass-split me-1"></i> Pending Approval</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-1">Institution Name</label>
+                        <div class="fw-bold text-dark fs-6">{{ inst.name }}</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-1">Grading System</label>
+                        <div class="fw-bold text-primary fs-6"><i class="bi bi-award me-1"></i> {{ inst.get_grading_system_display }}</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-1">Admin Username</label>
+                        <div class="fw-bold text-dark"><i class="bi bi-person-badge text-secondary me-1"></i> {{ inst.user.username }}</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-1">Admin Email</label>
+                        <div class="fw-bold text-dark"><i class="bi bi-envelope text-secondary me-1"></i> {{ inst.user.email|default:"Not Provided" }}</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-1">Contact Phone</label>
+                        <div class="fw-bold text-dark">
+                            <i class="bi bi-telephone text-secondary me-1"></i> {{ inst.phone_number|default:"Not Provided" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-1">Signatory Details</label>
+                        <div class="fw-bold text-dark">{{ inst.signatory_name }}</div>
+                        <small class="text-muted">{{ inst.signatory_title }}</small>
+                    </div>
+
+                    {% if inst.logo %}
+                    <div class="col-12 mt-3">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-1">Institution Logo</label>
+                        <img src="{{ inst.logo.url }}" alt="Logo" class="img-thumbnail p-2 bg-white" style="max-height: 85px; width: auto;">
+                    </div>
+                    {% endif %}
+
+                    {% if inst.footer_logo1 or inst.footer_logo2 or inst.footer_logo3 or inst.footer_logo4 %}
+                    <div class="col-12 mt-3">
+                        <label class="text-muted small fw-bold text-uppercase d-block mb-2">Partner Footer Logos</label>
+                        <div class="d-flex align-items-center gap-2 flex-wrap bg-light p-2 rounded-3 border">
+                            {% if inst.footer_logo1 %}<img src="{{ inst.footer_logo1.url }}" class="img-thumbnail" style="max-height: 45px;">{% endif %}
+                            {% if inst.footer_logo2 %}<img src="{{ inst.footer_logo2.url }}" class="img-thumbnail" style="max-height: 45px;">{% endif %}
+                            {% if inst.footer_logo3 %}<img src="{{ inst.footer_logo3.url }}" class="img-thumbnail" style="max-height: 45px;">{% endif %}
+                            {% if inst.footer_logo4 %}<img src="{{ inst.footer_logo4.url }}" class="img-thumbnail" style="max-height: 45px;">{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer bg-light d-flex justify-content-between py-3">
+                <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    {% if inst.phone_number %}
+                        <a href="https://wa.me/91{{ inst.phone_number }}?text=Hello%20from%20Nano%20Results!%20Regarding%20your%20institution%20'{{ inst.name }}'." target="_blank" class="btn btn-outline-success fw-bold">
+                            <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                        </a>
+                    {% endif %}
+
+                    {% if not inst.is_approved %}
+                        <form method="POST" action="{% url 'results_app:approve_institution' inst.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success fw-bold">Approve Account</button>
+                        </form>
+                    {% endif %}
+
+                    {% if inst.is_approved %}
+                        <form method="POST" action="{% url 'results_app:suspend_institution' inst.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning fw-bold">Suspend Account</button>
+                        </form>
+                    {% endif %}
+
+                    {% if not inst.is_rejected %}
+                        <form method="POST" action="{% url 'results_app:reject_institution' inst.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger fw-bold">Reject Application</button>
+                        </form>
+                    {% endif %}
+
+                    {% if inst.is_rejected %}
+                        <form method="POST" action="{% url 'results_app:delete_institution' inst.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger fw-bold" onclick="return confirm('Permanently delete this application?');">Delete</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
