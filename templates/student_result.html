@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load grade_tags %}
+{% load static grade_tags %}
 
 {% block content %}
 <style>
@@ -231,16 +231,17 @@
         letter-spacing: 0.5px;
     }
 
-    /* Footer Logo Badges */
-    .rc-footer-badge {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 8px 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        display: flex;
+    /* Footer Logo Box - High Contrast & Adaptable for Any Theme Color */
+    .rc-footer-logo-box {
+        display: inline-flex;
         align-items: center;
-        gap: 8px;
-        text-align: left;
+        justify-content: center;
+        background: #ffffff;
+        padding: 10px 24px;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        max-width: 100%;
     }
 </style>
 
@@ -371,10 +372,11 @@
                     <table class="rc-table">
                         <thead>
                             <tr>
-                                <th style="width: 40%;">SUBJECT</th>
-                                <th style="width: 20%;">EXAM</th>
-                                <th style="width: 22%;">COURSE WORK</th>
-                                <th style="width: 18%;">SCORE</th>
+                                <th style="width: 32%;">SUBJECT</th>
+                                <th style="width: 17%;">EXAM</th>
+                                <th style="width: 17%;">COURSE WORK</th>
+                                <th style="width: 17%;">SCORE</th>
+                                <th style="width: 17%;">GRADE</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -384,10 +386,18 @@
                                 <td>{{ r.marks|clean_mark }}</td>
                                 <td>{{ r.ce_marks|clean_mark }}</td>
                                 <td>{{ r.total_score|clean_mark }}</td>
+                                <td>
+                                    {% get_grade r.total_score 'UMMU_HABEEBA' max_marks=r.subject.max_marks as sub_g %}
+                                    {% if r.total_score < r.subject.max_marks|multiply:0.6 %}
+                                        <span class="badge bg-danger px-2 py-1">F</span>
+                                    {% else %}
+                                        <span class="badge bg-dark px-2 py-1">{{ sub_g }}</span>
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="py-3 bg-light text-muted">No marks entered for this student.</td>
+                                <td colspan="5" class="py-3 bg-light text-muted">No marks entered for this student.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -423,55 +433,18 @@
                     </div>
                 </div>
 
-                <!-- Footer Logos Bar -->
-                <div class="pt-3 border-top border-dark border-1">
-                    <div class="d-flex align-items-center justify-content-around flex-wrap gap-2 text-center">
-                        {% if institution.footer_logo1 %}
-                            <img src="{{ institution.footer_logo1.url }}" alt="Footer Logo 1" style="max-height: 50px; width: auto;">
-                        {% else %}
-                            <div class="rc-footer-badge">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#e91e63"><path d="M12 2L2 7l10 5l10-5l-10-5zm0 9l-8-4v6l8 4l8-4v-6l-8 4z"/></svg>
-                                <div>
-                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">MEN'S MASTERY</div>
-                                    <div class="text-muted" style="font-size: 0.6rem;">Holistic Life School</div>
-                                </div>
+                <!-- Footer Logo Bar -->
+                <div class="pt-3 border-top border-dark border-1 text-center">
+                    <div class="rc-footer-logo-box">
+                        {% if institution.footer_logo1 or institution.footer_logo2 or institution.footer_logo3 or institution.footer_logo4 %}
+                            <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
+                                {% if institution.footer_logo1 %}<img src="{{ institution.footer_logo1.url }}" alt="Footer Logo 1" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
+                                {% if institution.footer_logo2 %}<img src="{{ institution.footer_logo2.url }}" alt="Footer Logo 2" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
+                                {% if institution.footer_logo3 %}<img src="{{ institution.footer_logo3.url }}" alt="Footer Logo 3" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
+                                {% if institution.footer_logo4 %}<img src="{{ institution.footer_logo4.url }}" alt="Footer Logo 4" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
                             </div>
-                        {% endif %}
-
-                        {% if institution.footer_logo2 %}
-                            <img src="{{ institution.footer_logo2.url }}" alt="Footer Logo 2" style="max-height: 50px; width: auto;">
                         {% else %}
-                            <div class="rc-footer-badge">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#ff9800"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                                <div>
-                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">NEXT GEN-IUS</div>
-                                    <div class="text-muted" style="font-size: 0.6rem;">Bright Minds Institute</div>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if institution.footer_logo3 %}
-                            <img src="{{ institution.footer_logo3.url }}" alt="Footer Logo 3" style="max-height: 50px; width: auto;">
-                        {% else %}
-                            <div class="rc-footer-badge">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#00bcd4"><path d="M12 3c-4.97 0-9 4.03-9 9c0 2.12.74 4.07 1.97 5.61L4.35 19.4a1 1 0 0 0 1.41 1.41l1.82-1.82A8.94 8.94 0 0 0 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 14a5 5 0 1 1 0-10a5 5 0 0 1 0 10z"/></svg>
-                                <div>
-                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">MIND-PRO</div>
-                                    <div class="text-muted" style="font-size: 0.6rem;">School of Training</div>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if institution.footer_logo4 %}
-                            <img src="{{ institution.footer_logo4.url }}" alt="Footer Logo 4" style="max-height: 50px; width: auto;">
-                        {% else %}
-                            <div class="rc-footer-badge">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="#9c27b0"><path d="M12 3L1 9l11 6l9-4.91V17h2V9L12 3z"/></svg>
-                                <div>
-                                    <div class="fw-bold text-dark" style="font-size: 0.72rem; line-height: 1.1;">UMMU HABEEBA</div>
-                                    <div class="text-muted" style="font-size: 0.6rem;">Virtual Campus</div>
-                                </div>
-                            </div>
+                            <img src="{% static 'images/ummuhabeeba_logo.png' %}" alt="Ummu Habeeba Logo" style="max-height: 55px; width: auto; object-fit: contain;">
                         {% endif %}
                     </div>
                 </div>

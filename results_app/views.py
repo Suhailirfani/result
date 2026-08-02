@@ -155,7 +155,7 @@ def student_result_view(request, inst_id):
                         results_by_exam[exam_name]['has_failed_subject'] = True
                     elif institution.grading_system == 'HADIYA' and r.marks < (r.subject.max_marks * 0.4):
                         results_by_exam[exam_name]['has_failed_subject'] = True
-                    elif institution.grading_system == 'UMMU_HABEEBA' and score_val < (r.subject.max_marks * 0.4):
+                    elif institution.grading_system == 'UMMU_HABEEBA' and score_val < (r.subject.max_marks * 0.6):
                         results_by_exam[exam_name]['has_failed_subject'] = True
         except Student.DoesNotExist:
             messages.error(request, "Student not found in this institution. Please check your register number.")
@@ -233,7 +233,7 @@ def class_result_view(request, class_num):
                     has_failed_subject = True
                 elif institution.grading_system == 'HADIYA' and mark < (sub.max_marks * 0.4):
                     has_failed_subject = True
-                elif institution.grading_system == 'UMMU_HABEEBA' and mark < (sub.max_marks * 0.4):
+                elif institution.grading_system == 'UMMU_HABEEBA' and mark < (sub.max_marks * 0.6):
                     has_failed_subject = True
                 elif institution.grading_system == '10_POINT' and mark < (sub.max_marks * 0.33):
                     has_failed_subject = True
@@ -286,6 +286,8 @@ def toppers_view(request, class_num):
             students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
         elif institution.grading_system == 'HADIYA':
             students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
+        elif institution.grading_system == 'UMMU_HABEEBA':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.6)
     else:
         students = Student.objects.none()
         
@@ -318,6 +320,8 @@ def toppers_poster_view(request, class_num):
             students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
         elif institution.grading_system == 'HADIYA':
             students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
+        elif institution.grading_system == 'UMMU_HABEEBA':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.6)
     else:
         students = Student.objects.none()
         
@@ -362,6 +366,8 @@ def rank_list_view(request, class_num):
             students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
         elif institution.grading_system == 'HADIYA':
             students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
+        elif institution.grading_system == 'UMMU_HABEEBA':
+            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.6)
     else:
         students = Student.objects.none()
         

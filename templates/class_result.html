@@ -100,7 +100,9 @@
                             <td>
                                 {{ m.mark|clean_mark }}
                                 {% if request.user.institution.grading_system != 'PERCENTAGE' and m.mark != '-' %}
-                                    {% if m.mark < m.subject.max_marks|multiply:0.4 %}
+                                    {% if request.user.institution.grading_system == 'UMMU_HABEEBA' and m.mark < m.subject.max_marks|multiply:0.6 %}
+                                        <span class="badge bg-danger ms-1">F</span>
+                                    {% elif m.mark < m.subject.max_marks|multiply:0.4 %}
                                         <span class="badge bg-danger ms-1">{% get_grade m.mark request.user.institution.grading_system max_marks=m.subject.max_marks %}</span>
                                     {% else %}
                                         <span class="badge bg-info ms-1">{% get_grade m.mark request.user.institution.grading_system max_marks=m.subject.max_marks %}</span>
@@ -110,13 +112,13 @@
                         {% endfor %}
                         <td>
                             <span class="badge bg-primary fs-6">{{ row.total|clean_mark }}</span>
-                            {% if request.user.institution.grading_system == 'SUNNI_BOARD' or request.user.institution.grading_system == 'GULF_SECTOR' or request.user.institution.grading_system == 'HADIYA' %}
+                            {% if request.user.institution.grading_system == 'SUNNI_BOARD' or request.user.institution.grading_system == 'GULF_SECTOR' or request.user.institution.grading_system == 'HADIYA' or request.user.institution.grading_system == 'UMMU_HABEEBA' %}
                                 {% if row.max_total > 0 %}
                                     <br>
                                     {% if row.has_failed_subject %}
                                         <span class="badge bg-danger mt-1">FAILED</span>
                                     {% else %}
-                                        <span class="badge bg-warning text-dark mt-1">{% get_grade_name row.total request.user.institution.grading_system max_marks=row.max_total is_total=True %}</span>
+                                        <span class="badge bg-success mt-1">PASSED</span>
                                     {% endif %}
                                 {% endif %}
                             {% endif %}

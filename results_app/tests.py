@@ -51,3 +51,29 @@ class HadiyaGradingSystemTests(TestCase):
         self.assertEqual(calculate_grade(9, 50, 'HADIYA'), ('e', 'e'))
         # 45 out of 50 = 90% -> 'a+'
         self.assertEqual(calculate_grade(45, 50, 'HADIYA'), ('a+', 'a+'))
+
+class UmmuHabeebaGradingSystemTests(TestCase):
+    def test_ummu_habeeba_scale(self):
+        # 90 - 100 A+ Outstanding
+        self.assertEqual(calculate_grade(90, 100, 'UMMU_HABEEBA'), ('A+', 'Outstanding'))
+        self.assertEqual(calculate_grade(100, 100, 'UMMU_HABEEBA'), ('A+', 'Outstanding'))
+
+        # 80 - 89 A Excellent
+        self.assertEqual(calculate_grade(80, 100, 'UMMU_HABEEBA'), ('A', 'Excellent'))
+        self.assertEqual(calculate_grade(89, 100, 'UMMU_HABEEBA'), ('A', 'Excellent'))
+
+        # 70 - 79 B+ Very Good
+        self.assertEqual(calculate_grade(70, 100, 'UMMU_HABEEBA'), ('B+', 'Very Good'))
+        self.assertEqual(calculate_grade(79, 100, 'UMMU_HABEEBA'), ('B+', 'Very Good'))
+
+        # 60 - 69 B Good
+        self.assertEqual(calculate_grade(60, 100, 'UMMU_HABEEBA'), ('B', 'Good'))
+        self.assertEqual(calculate_grade(69, 100, 'UMMU_HABEEBA'), ('B', 'Good'))
+
+        # below 60 Failed
+        self.assertEqual(calculate_grade(59, 100, 'UMMU_HABEEBA'), ('F', 'Failed'))
+        self.assertEqual(calculate_grade(0, 100, 'UMMU_HABEEBA'), ('F', 'Failed'))
+
+    def test_ummu_habeeba_is_total(self):
+        self.assertEqual(calculate_grade(60, 100, 'UMMU_HABEEBA', is_total=True), ('PASSED', 'PASSED'))
+        self.assertEqual(calculate_grade(59, 100, 'UMMU_HABEEBA', is_total=True), ('FAILED', 'FAILED'))
