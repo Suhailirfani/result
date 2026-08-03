@@ -233,15 +233,15 @@
 
     /* Footer Logo Box - High Contrast & Adaptable for Any Theme Color */
     .rc-footer-logo-box {
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
         background: #ffffff;
-        padding: 10px 24px;
-        border-radius: 14px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 0, 0, 0.12);
-        max-width: 100%;
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid #000000;
+        width: 100%;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     }
 </style>
 
@@ -447,20 +447,18 @@
                 </div>
 
                 <!-- Footer Logo Bar -->
-                <div class="pt-3 border-top border-dark border-1 text-center">
+                {% if institution.footer_logo1 or institution.footer_logo2 or institution.footer_logo3 or institution.footer_logo4 %}
+                <div class="pt-2 text-center w-100">
                     <div class="rc-footer-logo-box">
-                        {% if institution.footer_logo1 or institution.footer_logo2 or institution.footer_logo3 or institution.footer_logo4 %}
-                            <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
-                                {% if institution.footer_logo1 %}<img src="{{ institution.footer_logo1.url }}" alt="Footer Logo 1" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
-                                {% if institution.footer_logo2 %}<img src="{{ institution.footer_logo2.url }}" alt="Footer Logo 2" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
-                                {% if institution.footer_logo3 %}<img src="{{ institution.footer_logo3.url }}" alt="Footer Logo 3" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
-                                {% if institution.footer_logo4 %}<img src="{{ institution.footer_logo4.url }}" alt="Footer Logo 4" style="max-height: 55px; width: auto; object-fit: contain;">{% endif %}
-                            </div>
-                        {% else %}
-                            <img src="{% static 'images/ummuhabeeba_logo.png' %}" alt="Ummu Habeeba Logo" style="max-height: 55px; width: auto; object-fit: contain;">
-                        {% endif %}
+                        <div class="d-flex align-items-center justify-content-around w-100 flex-wrap gap-3">
+                            {% if institution.footer_logo1 %}<img src="{{ institution.footer_logo1.url }}" alt="Footer Logo 1" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                            {% if institution.footer_logo2 %}<img src="{{ institution.footer_logo2.url }}" alt="Footer Logo 2" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                            {% if institution.footer_logo3 %}<img src="{{ institution.footer_logo3.url }}" alt="Footer Logo 3" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                            {% if institution.footer_logo4 %}<img src="{{ institution.footer_logo4.url }}" alt="Footer Logo 4" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                        </div>
                     </div>
                 </div>
+                {% endif %}
 
             </div>
 
