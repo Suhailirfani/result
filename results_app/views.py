@@ -262,6 +262,46 @@ def class_result_view(request, class_num):
     })
 
 @login_required
+def get_ranked_students_for_class(institution, class_num, selected_exam):
+    if not selected_exam:
+        return []
+
+    students = Student.objects.filter(institution=institution, student_class=class_num)
+    ranked_list = []
+    for s in students:
+        results = Result.objects.filter(student=s, exam=selected_exam).select_related('subject')
+        if not results.exists():
+            continue
+
+        has_failed_subject = False
+        total_score = 0.0
+
+        for r in results:
+            mark = r.total_score if institution.grading_system == 'UMMU_HABEEBA' else r.marks
+            total_score += mark
+
+            sub_max = r.subject.max_marks
+            if institution.grading_system == 'SUNNI_BOARD' and mark < 40:
+                has_failed_subject = True
+            elif institution.grading_system == 'GULF_SECTOR' and mark < (sub_max * 0.3):
+                has_failed_subject = True
+            elif institution.grading_system == 'HADIYA' and mark < (sub_max * 0.4):
+                has_failed_subject = True
+            elif institution.grading_system == 'UMMU_HABEEBA' and mark < (sub_max * 0.6):
+                has_failed_subject = True
+            elif institution.grading_system in ['10_POINT', 'PERCENTAGE'] and mark < (sub_max * 0.33):
+                has_failed_subject = True
+            elif institution.grading_system == '9_POINT' and mark < (sub_max * 0.30):
+                has_failed_subject = True
+
+        if not has_failed_subject:
+            s.total_marks = int(total_score) if total_score.is_integer() else total_score
+            ranked_list.append(s)
+
+    ranked_list.sort(key=lambda s: s.total_marks, reverse=True)
+    return ranked_list
+
+@login_required
 def toppers_view(request, class_num):
     if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
         return redirect('results_app:pending_approval')
@@ -277,21 +317,7 @@ def toppers_view(request, class_num):
     elif exams.exists():
         selected_exam = exams.first()
         
-    if selected_exam:
-        students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
-            total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
-        ).order_by('-total_marks')
-        
-        if institution.grading_system == 'SUNNI_BOARD':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
-        elif institution.grading_system == 'HADIYA':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
-        elif institution.grading_system == 'UMMU_HABEEBA':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.6)
-    else:
-        students = Student.objects.none()
-        
-    # Let's say top 3
+    students = get_ranked_students_for_class(institution, class_num, selected_exam)
     toppers = students[:3]
     return render(request, 'toppers.html', {'toppers': toppers, 'class_num': class_num, 'exams': exams, 'selected_exam': selected_exam})
 
@@ -311,24 +337,9 @@ def toppers_poster_view(request, class_num):
     elif exams.exists():
         selected_exam = exams.first()
         
-    if selected_exam:
-        students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
-            total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
-        ).order_by('-total_marks')
-        
-        if institution.grading_system == 'SUNNI_BOARD':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
-        elif institution.grading_system == 'HADIYA':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
-        elif institution.grading_system == 'UMMU_HABEEBA':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.6)
-    else:
-        students = Student.objects.none()
-        
-    # Top 3
+    students = get_ranked_students_for_class(institution, class_num, selected_exam)
     toppers = list(students[:3])
     
-    # Pad to always have 3 elements for easier rendering in template
     while len(toppers) < 3:
         toppers.append(None)
         
@@ -357,20 +368,7 @@ def rank_list_view(request, class_num):
     elif exams.exists():
         selected_exam = exams.first()
         
-    if selected_exam:
-        students = Student.objects.filter(institution=institution, student_class=class_num).annotate(
-            total_marks=Sum('results__marks', filter=models.Q(results__exam=selected_exam))
-        ).order_by('-total_marks')
-        
-        if institution.grading_system == 'SUNNI_BOARD':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=40)
-        elif institution.grading_system == 'HADIYA':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.4)
-        elif institution.grading_system == 'UMMU_HABEEBA':
-            students = students.exclude(results__exam=selected_exam, results__marks__lt=models.F('results__subject__max_marks') * 0.6)
-    else:
-        students = Student.objects.none()
-        
+    students = get_ranked_students_for_class(institution, class_num, selected_exam)
     return render(request, 'rank_list.html', {'students': students, 'class_num': class_num, 'exams': exams, 'selected_exam': selected_exam})
 
 @login_required
