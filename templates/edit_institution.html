@@ -8,6 +8,7 @@
                 <h4 class="mb-0 fw-bold"><i class="bi bi-gear-fill me-2"></i>Edit Institution Settings</h4>
             </div>
             <div class="card-body p-4">
+                <a href="{% url 'results_app:manage_logos' %}" class="btn btn-warning fw-bold text-dark w-100 mb-4 py-2 shadow-sm"><i class="bi bi-images me-2"></i> Dedicated Logo Management Page (View / Upload / Delete Logos) &rarr;</a>
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {% for field in form %}

@@ -819,6 +819,53 @@ def edit_institution_view(request):
     return render(request, 'edit_institution.html', {'form': form, 'institution': institution})
 
 @login_required
+def manage_logos_view(request):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    
+    if request.method == 'POST':
+        updated_count = 0
+        for logo_key in ['logo', 'footer_logo1', 'footer_logo2', 'footer_logo3', 'footer_logo4']:
+            if logo_key in request.FILES:
+                old_field = getattr(institution, logo_key)
+                if old_field:
+                    old_field.delete(save=False)
+                setattr(institution, logo_key, request.FILES[logo_key])
+                updated_count += 1
+        if updated_count > 0:
+            institution.save()
+            messages.success(request, 'Logo(s) uploaded successfully.')
+        return redirect('results_app:manage_logos')
+        
+    logos_data = [
+        {'key': 'logo', 'title': 'Main Institution Logo', 'desc': 'Displayed at top of student report cards and dashboard header.', 'file': institution.logo},
+        {'key': 'footer_logo1', 'title': 'Footer Logo 1', 'desc': 'First partner / sponsor logo in report card footer bar.', 'file': institution.footer_logo1},
+        {'key': 'footer_logo2', 'title': 'Footer Logo 2', 'desc': 'Second partner / sponsor logo in report card footer bar.', 'file': institution.footer_logo2},
+        {'key': 'footer_logo3', 'title': 'Footer Logo 3', 'desc': 'Third partner / sponsor logo in report card footer bar.', 'file': institution.footer_logo3},
+        {'key': 'footer_logo4', 'title': 'Footer Logo 4', 'desc': 'Fourth partner / sponsor logo in report card footer bar.', 'file': institution.footer_logo4},
+    ]
+    
+    return render(request, 'manage_logos.html', {'institution': institution, 'logos_data': logos_data})
+
+@login_required
+def delete_logo_view(request, logo_key):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        return redirect('results_app:pending_approval')
+    institution = request.user.institution
+    valid_keys = ['logo', 'footer_logo1', 'footer_logo2', 'footer_logo3', 'footer_logo4']
+    if logo_key in valid_keys:
+        logo_field = getattr(institution, logo_key)
+        if logo_field:
+            logo_field.delete(save=False)
+            setattr(institution, logo_key, None)
+            institution.save()
+            messages.success(request, 'Logo deleted successfully.')
+        else:
+            messages.warning(request, 'No logo file was found to delete.')
+    return redirect('results_app:manage_logos')
+
+@login_required
 def add_exam_view(request):
     if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
         return redirect('results_app:pending_approval')

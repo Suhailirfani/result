@@ -36,6 +36,8 @@ urlpatterns = [
     path('staff/manage-subjects/<str:class_num>/', views.manage_subjects_view, name='manage_subjects'),
     
     path('staff/edit-institution/', views.edit_institution_view, name='edit_institution'),
+    path('staff/manage-logos/', views.manage_logos_view, name='manage_logos'),
+    path('staff/delete-logo/<str:logo_key>/', views.delete_logo_view, name='delete_logo'),
     
     path('staff/add-exam/', views.add_exam_view, name='add_exam'),
     path('staff/class/<str:class_num>/edit-marks/<int:student_id>/<int:exam_id>/', views.edit_student_marks_view, name='edit_student_marks'),
