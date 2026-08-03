@@ -803,12 +803,19 @@ def edit_institution_view(request):
     if request.method == 'POST':
         form = InstitutionEditForm(request.POST, request.FILES, instance=institution)
         if form.is_valid():
-            form.save()
+            inst = form.save(commit=False)
+            for logo_field in ['logo', 'footer_logo1', 'footer_logo2', 'footer_logo3', 'footer_logo4']:
+                if request.POST.get(f'remove_{logo_field}') and not request.FILES.get(logo_field):
+                    field_obj = getattr(inst, logo_field)
+                    if field_obj:
+                        field_obj.delete(save=False)
+                    setattr(inst, logo_field, None)
+            inst.save()
             messages.success(request, 'Institution details updated successfully.')
             return redirect('results_app:staff_dashboard')
     else:
         form = InstitutionEditForm(instance=institution)
-    return render(request, 'edit_institution.html', {'form': form})
+    return render(request, 'edit_institution.html', {'form': form, 'institution': institution})
 
 @login_required
 def add_exam_view(request):

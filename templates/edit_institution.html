@@ -2,35 +2,133 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm mt-5">
-            <div class="card-header bg-primary text-white text-center">
-                <h4 class="mb-0">Edit Institution Settings</h4>
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow-sm mt-4 mb-5">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-gear-fill me-2"></i>Edit Institution Settings</h4>
             </div>
             <div class="card-body p-4">
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {% for field in form %}
-                        <div class="mb-3 {% if field.field.widget.input_type == 'checkbox' %}form-check{% endif %}">
+                        <div class="mb-4 {% if field.field.widget.input_type == 'checkbox' %}form-check form-switch p-3 ps-5 bg-light rounded border{% endif %}">
                             {% if field.field.widget.input_type != 'checkbox' %}
-                                <label class="form-label fw-bold">{{ field.label }}</label>
+                                <label class="form-label fw-bold text-dark mb-1">{{ field.label }}</label>
                             {% endif %}
+
+                            {% if field.field.widget.input_type == 'file' %}
+                                {% if field.value %}
+                                    <div class="mb-2 p-2 border rounded bg-light d-flex align-items-center justify-content-between shadow-sm" id="card-{{ field.name }}">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <a href="{{ field.value.url }}" target="_blank" title="Click to view full image">
+                                                <img src="{{ field.value.url }}" alt="{{ field.label }}" id="current-img-{{ field.name }}" class="img-thumbnail bg-white p-1" style="height: 65px; width: auto; max-width: 140px; object-fit: contain; transition: all 0.2s ease;">
+                                            </a>
+                                            <div>
+                                                <span class="badge bg-success mb-1" id="badge-{{ field.name }}"><i class="bi bi-check-circle-fill me-1"></i> File Uploaded</span>
+                                                <small class="text-muted d-block text-break mb-1" style="font-size: 0.82rem;">{{ field.value.name }}</small>
+                                                
+                                                <div class="form-check">
+                                                    <input type="checkbox" name="remove_{{ field.name }}" id="remove_{{ field.name }}" class="form-check-input remove-logo-check" data-field="{{ field.name }}">
+                                                    <label for="remove_{{ field.name }}" class="form-check-label text-danger small fw-bold" style="cursor: pointer;">
+                                                        <i class="bi bi-trash me-1"></i> Remove this logo
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="{{ field.value.url }}" target="_blank" class="btn btn-sm btn-outline-primary ms-2" title="View Full Image">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="text-muted small mb-2"><i class="bi bi-info-circle me-1"></i> No image uploaded yet</div>
+                                {% endif %}
+                            {% endif %}
+
                             {{ field }}
-                            {% if field.field.widget.input_type == 'checkbox' %}
-                                <label class="form-check-label fw-bold ms-2">{{ field.label }}</label>
+
+                            {% if field.field.widget.input_type == 'file' %}
+                                <div id="preview-container-{{ field.name }}" class="mt-2 p-2 border border-primary rounded bg-white d-none shadow-sm">
+                                    <small class="text-primary d-block fw-semibold mb-1"><i class="bi bi-file-image me-1"></i> New File Selected (Preview):</small>
+                                    <img id="preview-img-{{ field.name }}" src="" alt="New Preview" class="img-thumbnail bg-white p-1" style="height: 65px; width: auto; max-width: 140px; object-fit: contain;">
+                                </div>
                             {% endif %}
+
+                            {% if field.field.widget.input_type == 'checkbox' %}
+                                <label class="form-check-label fw-bold ms-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% endif %}
+
+                            {% if field.help_text %}
+                                <div class="form-text text-muted small mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+
                             {% if field.errors %}
-                                <div class="text-danger small mt-1">{{ field.errors|join:", " }}</div>
+                                <div class="text-danger small mt-1 fw-semibold">{{ field.errors|join:", " }}</div>
                             {% endif %}
                         </div>
                     {% endfor %}
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary fw-bold">Update Institution</button>
+                    <div class="d-flex justify-content-between mt-4 pt-2 border-top">
+                        <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary px-4"><i class="bi bi-x-circle me-1"></i> Cancel</a>
+                        <button type="submit" class="btn btn-primary fw-bold px-4"><i class="bi bi-check-circle me-1"></i> Update Institution</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const fieldName = this.name;
+            const previewContainer = document.getElementById('preview-container-' + fieldName);
+            const previewImg = document.getElementById('preview-img-' + fieldName);
+            
+            if (this.files && this.files[0] && previewContainer && previewImg) {
+                const file = this.files[0];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        previewImg.src = evt.target.result;
+                        previewContainer.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else if (previewContainer) {
+                previewContainer.classList.add('d-none');
+            }
+        });
+    });
+
+    const removeChecks = document.querySelectorAll('.remove-logo-check');
+    removeChecks.forEach(chk => {
+        chk.addEventListener('change', function() {
+            const fieldName = this.getAttribute('data-field');
+            const img = document.getElementById('current-img-' + fieldName);
+            const badge = document.getElementById('badge-' + fieldName);
+            if (this.checked) {
+                if (img) {
+                    img.style.opacity = '0.25';
+                    img.style.filter = 'grayscale(100%)';
+                }
+                if (badge) {
+                    badge.className = 'badge bg-danger mb-1';
+                    badge.innerHTML = '<i class="bi bi-trash-fill me-1"></i> Marked for Removal';
+                }
+            } else {
+                if (img) {
+                    img.style.opacity = '1';
+                    img.style.filter = 'none';
+                }
+                if (badge) {
+                    badge.className = 'badge bg-success mb-1';
+                    badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> File Uploaded';
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
+

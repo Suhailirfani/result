@@ -75,5 +75,17 @@ class UmmuHabeebaGradingSystemTests(TestCase):
         self.assertEqual(calculate_grade(0, 100, 'UMMU_HABEEBA'), ('F', 'Failed'))
 
     def test_ummu_habeeba_is_total(self):
-        self.assertEqual(calculate_grade(60, 100, 'UMMU_HABEEBA', is_total=True), ('PASSED', 'PASSED'))
-        self.assertEqual(calculate_grade(59, 100, 'UMMU_HABEEBA', is_total=True), ('FAILED', 'FAILED'))
+        # 540 / 600 = 90% -> A+, Apex Achievers
+        self.assertEqual(calculate_grade(540, 600, 'UMMU_HABEEBA', is_total=True), ('A+', 'Apex Achievers'))
+        # 480 / 600 = 80% -> A, Prime Achievers
+        self.assertEqual(calculate_grade(480, 600, 'UMMU_HABEEBA', is_total=True), ('A', 'Prime Achievers'))
+        # 420 / 600 = 70% -> B+, Elite Performers
+        self.assertEqual(calculate_grade(420, 600, 'UMMU_HABEEBA', is_total=True), ('B+', 'Elite Performers'))
+        # 360 / 600 = 60% -> B, Excellent
+        self.assertEqual(calculate_grade(360, 600, 'UMMU_HABEEBA', is_total=True), ('B', 'Excellent'))
+        # 300 / 600 = 50% -> C+, Very Good
+        self.assertEqual(calculate_grade(300, 600, 'UMMU_HABEEBA', is_total=True), ('C+', 'Very Good'))
+        # 240 / 600 = 40% -> C, Good
+        self.assertEqual(calculate_grade(240, 600, 'UMMU_HABEEBA', is_total=True), ('C', 'Good'))
+        # < 240 / 600 = < 40% -> F, Needs Improvement
+        self.assertEqual(calculate_grade(239, 600, 'UMMU_HABEEBA', is_total=True), ('F', 'Needs Improvement'))

@@ -28,17 +28,14 @@
 
 
 
-
-
-
--------{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm mt-5">
-            <div class="card-header bg-primary text-white text-center">
-                <h4 class="mb-0">Institution Registration</h4>
+        <div class="card shadow-sm mt-5 mb-5">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-building me-2"></i>Institution Registration</h4>
             </div>
             <div class="card-body p-4">
                 <p class="text-muted text-center mb-4">Register your institution. Your login username can be different from your actual Institution Name.</p>
@@ -46,20 +43,54 @@
                     {% csrf_token %}
                     {% for field in form %}
                         <div class="mb-3">
-                            <label class="form-label">{{ field.label }}</label>
+                            <label class="form-label fw-bold text-dark mb-1">{{ field.label }}</label>
                             {{ field }}
+                            {% if field.field.widget.input_type == 'file' %}
+                                <div id="preview-container-{{ field.name }}" class="mt-2 p-2 border border-primary rounded bg-white d-none shadow-sm">
+                                    <small class="text-primary d-block fw-semibold mb-1"><i class="bi bi-file-image me-1"></i> Selected Logo Preview:</small>
+                                    <img id="preview-img-{{ field.name }}" src="" alt="Selected Preview" class="img-thumbnail bg-white p-1" style="height: 65px; width: auto; max-width: 140px; object-fit: contain;">
+                                </div>
+                            {% endif %}
                             {% if field.errors %}
-                                <div class="text-danger small">{{ field.errors|join:", " }}</div>
+                                <div class="text-danger small mt-1 fw-semibold">{{ field.errors|join:", " }}</div>
                             {% endif %}
                         </div>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary w-100 mt-3">Register</button>
+                    <button type="submit" class="btn btn-primary fw-bold w-100 mt-3 py-2"><i class="bi bi-check-lg me-1"></i> Register Institution</button>
                 </form>
             </div>
             <div class="card-footer text-center bg-light">
-                <small>Already have an account? <a href="{% url 'admin:login' %}">Login here</a></small>
+                <small>Already have an account? <a href="{% url 'results_app:login' %}" class="fw-bold">Login here</a></small>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const fieldName = this.name;
+            const previewContainer = document.getElementById('preview-container-' + fieldName);
+            const previewImg = document.getElementById('preview-img-' + fieldName);
+            
+            if (this.files && this.files[0] && previewContainer && previewImg) {
+                const file = this.files[0];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        previewImg.src = evt.target.result;
+                        previewContainer.classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } else if (previewContainer) {
+                previewContainer.classList.add('d-none');
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
+

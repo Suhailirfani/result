@@ -406,13 +406,26 @@
 
                 <!-- Grand Total & Result Status Bar -->
                 <div class="row g-3 justify-content-center my-3">
-                    <div class="col-6 col-md-5">
-                        <div class="rc-summary-pill">
-                            {{ exam_data.total|clean_mark }}
+                    <div class="col-4 col-md-4">
+                        <div class="rc-summary-pill py-2">
+                            <span class="d-block small text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">TOTAL SCORE</span>
+                            {{ exam_data.total|clean_mark }} / {{ exam_data.max_total|clean_mark }}
                         </div>
                     </div>
-                    <div class="col-6 col-md-5">
-                        <div class="rc-summary-pill">
+                    <div class="col-4 col-md-4">
+                        <div class="rc-summary-pill py-2">
+                            <span class="d-block small text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">OVERALL GRADE</span>
+                            {% get_grade exam_data.total 'UMMU_HABEEBA' max_marks=exam_data.max_total is_total=True as tot_g %}
+                            {% get_grade_name exam_data.total 'UMMU_HABEEBA' max_marks=exam_data.max_total is_total=True as tot_gn %}
+                            <span style="color: #0d0d0d;">{{ tot_g }}</span>
+                            {% if tot_gn %}
+                                <small class="d-block text-uppercase fw-bold" style="font-size: 0.72rem; color: #4b5563;">{{ tot_gn }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-4 col-md-4">
+                        <div class="rc-summary-pill py-2">
+                            <span class="d-block small text-muted text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">STATUS</span>
                             {% if exam_data.has_failed_subject %}
                                 <span class="text-danger">FAILED</span>
                             {% else %}
@@ -595,7 +608,7 @@ function downloadReportCardAsJPEG(e) {
                                 <th class="ps-4"><strong>Total Marks</strong></th>
                                 <th class="pe-4 text-end">
                                     <span class="badge bg-primary fs-5">{{ exam_data.total|clean_mark }}</span>
-                                    {% if institution.grading_system == 'SUNNI_BOARD' or institution.grading_system == 'GULF_SECTOR' or institution.grading_system == 'HADIYA' %}
+                                    {% if institution.grading_system == 'SUNNI_BOARD' or institution.grading_system == 'GULF_SECTOR' or institution.grading_system == 'HADIYA' or institution.grading_system == 'UMMU_HABEEBA' %}
                                         {% if exam_data.has_failed_subject %}
                                             <span class="badge bg-danger fs-6 ms-2">FAILED</span>
                                         {% else %}

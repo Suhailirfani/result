@@ -76,8 +76,13 @@ def calculate_grade(marks, max_marks, grading_system, is_total=False):
             
     elif grading_system == 'UMMU_HABEEBA':
         if is_total:
-            if percentage >= 60: return ('PASSED', 'PASSED')
-            else: return ('FAILED', 'FAILED')
+            if percentage >= 90: return ('A+', 'Apex Achievers')
+            elif percentage >= 80: return ('A', 'Prime Achievers')
+            elif percentage >= 70: return ('B+', 'Elite Performers')
+            elif percentage >= 60: return ('B', 'Excellent')
+            elif percentage >= 50: return ('C+', 'Very Good')
+            elif percentage >= 40: return ('C', 'Good')
+            else: return ('F', 'Needs Improvement')
         else:
             if percentage >= 90: return ('A+', 'Outstanding')
             elif percentage >= 80: return ('A', 'Excellent')
