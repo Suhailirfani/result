@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load grade_tags %}
 
 {% block content %}
 <style>
@@ -34,8 +35,19 @@
             <div class="card-body text-center">
                 <h5>{{ s.name }}</h5>
                 <p class="text-muted mb-2">Reg: {{ s.register_number }}</p>
-                <div class="display-6 fw-bold">{{ s.total_marks|default:"0" }}</div>
-                <p class="text-muted">Total Marks</p>
+                <div class="display-6 fw-bold mb-1">{{ s.total_marks|default:"0" }}</div>
+                {% if s.total_max_marks %}
+                    {% get_grade s.total_marks request.user.institution.grading_system max_marks=s.total_max_marks is_total=True as tot_g %}
+                    {% get_grade_name s.total_marks request.user.institution.grading_system max_marks=s.total_max_marks is_total=True as tot_gn %}
+                    {% if tot_g %}
+                        <div class="mb-2">
+                            <span class="badge bg-warning text-dark fs-6" title="{{ tot_gn }}">
+                                {{ tot_g }}{% if tot_gn %} - {{ tot_gn }}{% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                <p class="text-muted small mb-0">Total Marks & Grade</p>
             </div>
         </div>
     </div>

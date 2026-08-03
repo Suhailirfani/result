@@ -112,14 +112,20 @@
                         {% endfor %}
                         <td>
                             <span class="badge bg-primary fs-6">{{ row.total|clean_mark }}</span>
-                            {% if request.user.institution.grading_system == 'SUNNI_BOARD' or request.user.institution.grading_system == 'GULF_SECTOR' or request.user.institution.grading_system == 'HADIYA' or request.user.institution.grading_system == 'UMMU_HABEEBA' %}
-                                {% if row.max_total > 0 %}
-                                    <br>
-                                    {% if row.has_failed_subject %}
-                                        <span class="badge bg-danger mt-1">FAILED</span>
-                                    {% else %}
-                                        <span class="badge bg-success mt-1">PASSED</span>
+                            {% if row.max_total > 0 %}
+                                <br>
+                                {% if row.has_failed_subject %}
+                                    <span class="badge bg-danger mt-1">FAILED</span>
+                                {% else %}
+                                    {% get_grade row.total request.user.institution.grading_system max_marks=row.max_total is_total=True as tot_g %}
+                                    {% get_grade_name row.total request.user.institution.grading_system max_marks=row.max_total is_total=True as tot_gn %}
+                                    {% if tot_g %}
+                                        <span class="badge bg-warning text-dark mt-1" title="{{ tot_gn }}">
+                                            {{ tot_g }}{% if tot_gn %} - {{ tot_gn }}{% endif %}
+                                        </span>
+                                        <br>
                                     {% endif %}
+                                    <span class="badge bg-success mt-1">PASSED</span>
                                 {% endif %}
                             {% endif %}
                         </td>

@@ -275,10 +275,12 @@ def get_ranked_students_for_class(institution, class_num, selected_exam):
 
         has_failed_subject = False
         total_score = 0.0
+        total_max_score = 0.0
 
         for r in results:
             mark = r.total_score if institution.grading_system == 'UMMU_HABEEBA' else r.marks
             total_score += mark
+            total_max_score += r.subject.max_marks
 
             sub_max = r.subject.max_marks
             if institution.grading_system == 'SUNNI_BOARD' and mark < 40:
@@ -296,6 +298,7 @@ def get_ranked_students_for_class(institution, class_num, selected_exam):
 
         if not has_failed_subject:
             s.total_marks = int(total_score) if total_score.is_integer() else total_score
+            s.total_max_marks = int(total_max_score) if total_max_score.is_integer() else total_max_score
             ranked_list.append(s)
 
     ranked_list.sort(key=lambda s: s.total_marks, reverse=True)

@@ -1,3 +1,4 @@
+{% load grade_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -276,6 +277,15 @@
                 <div class="avatar">{{ rank_2.name|make_list|first|upper }}</div>
                 <div class="student-name">{{ rank_2.name }}</div>
                 <div class="student-marks">{{ rank_2.total_marks|floatformat:0 }}</div>
+                {% if rank_2.total_max_marks %}
+                    {% get_grade rank_2.total_marks institution.grading_system max_marks=rank_2.total_max_marks is_total=True as tot_g %}
+                    {% get_grade_name rank_2.total_marks institution.grading_system max_marks=rank_2.total_max_marks is_total=True as tot_gn %}
+                    {% if tot_g %}
+                        <div style="font-size: 1.05rem; font-weight: 700; color: #ffd700; text-shadow: 1px 1px 3px rgba(0,0,0,0.6); margin-top: 3px;">
+                            {{ tot_g }}{% if tot_gn %} - {{ tot_gn }}{% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
                 <div class="marks-label">Total Marks</div>
             </div>
             {% else %}
@@ -289,6 +299,15 @@
                 <div class="avatar">{{ rank_1.name|make_list|first|upper }}</div>
                 <div class="student-name">{{ rank_1.name }}</div>
                 <div class="student-marks">{{ rank_1.total_marks|floatformat:0 }}</div>
+                {% if rank_1.total_max_marks %}
+                    {% get_grade rank_1.total_marks institution.grading_system max_marks=rank_1.total_max_marks is_total=True as tot_g %}
+                    {% get_grade_name rank_1.total_marks institution.grading_system max_marks=rank_1.total_max_marks is_total=True as tot_gn %}
+                    {% if tot_g %}
+                        <div style="font-size: 1.25rem; font-weight: 800; color: #ffd700; text-shadow: 1px 1px 4px rgba(0,0,0,0.7); margin-top: 4px;">
+                            {{ tot_g }}{% if tot_gn %} - {{ tot_gn }}{% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
                 <div class="marks-label">Total Marks</div>
             </div>
             {% endif %}
@@ -300,6 +319,15 @@
                 <div class="avatar">{{ rank_3.name|make_list|first|upper }}</div>
                 <div class="student-name">{{ rank_3.name }}</div>
                 <div class="student-marks">{{ rank_3.total_marks|floatformat:0 }}</div>
+                {% if rank_3.total_max_marks %}
+                    {% get_grade rank_3.total_marks institution.grading_system max_marks=rank_3.total_max_marks is_total=True as tot_g %}
+                    {% get_grade_name rank_3.total_marks institution.grading_system max_marks=rank_3.total_max_marks is_total=True as tot_gn %}
+                    {% if tot_g %}
+                        <div style="font-size: 1.05rem; font-weight: 700; color: #ffd700; text-shadow: 1px 1px 3px rgba(0,0,0,0.6); margin-top: 3px;">
+                            {{ tot_g }}{% if tot_gn %} - {{ tot_gn }}{% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
                 <div class="marks-label">Total Marks</div>
             </div>
             {% else %}
