@@ -69,6 +69,7 @@ function copyToClipboard() {
                     <a href="{% url 'results_app:bulk_add_students' %}" class="btn btn-outline-warning text-dark"><i class="bi bi-file-earmark-excel-fill"></i> Bulk Add Students</a>
                     <a href="{% url 'results_app:add_subject' %}" class="btn btn-outline-primary"><i class="bi bi-book-half"></i> Add Subject (Create Class)</a>
                     <a href="{% url 'results_app:add_exam' %}" class="btn btn-outline-info text-dark"><i class="bi bi-journal-plus"></i> Add Exam</a>
+                    <a href="{% url 'results_app:all_report_cards_pdf_all' %}" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf-fill me-1"></i> All Report Cards (PDF)</a>
                 </div>
             </div>
         </div>
@@ -78,8 +79,9 @@ function copyToClipboard() {
 <div class="row">
     <div class="col-md-12">
         <div class="card shadow-sm">
-            <div class="card-header bg-white">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Class-wise Reports</h5>
+                <a href="{% url 'results_app:all_report_cards_pdf_all' %}" class="btn btn-sm btn-danger fw-bold"><i class="bi bi-file-earmark-pdf me-1"></i> Download All Classes PDF</a>
             </div>
             <div class="card-body">
                 {% if classes %}
@@ -92,11 +94,13 @@ function copyToClipboard() {
                                         {% if institution.grading_system == 'PASS_FAIL' %}
                                             <a href="{% url 'results_app:class_result_pass_fail' c %}" class="btn btn-sm btn-outline-primary">View Results</a>
                                             <a href="{% url 'results_app:manage_pass_fail' c %}" class="btn btn-sm btn-outline-success">Manage Pass/Fail</a>
+                                            <a href="{% url 'results_app:all_report_cards_pdf' c %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf me-1"></i> Download All PDF</a>
                                         {% else %}
                                             <a href="{% url 'results_app:class_result' c %}" class="btn btn-sm btn-outline-primary">View Results</a>
                                             <a href="{% url 'results_app:enter_marks' c %}" class="btn btn-sm btn-outline-success">Enter Marks</a>
                                             <a href="{% url 'results_app:rank_list' c %}" class="btn btn-sm btn-outline-info">Rank List</a>
                                             <a href="{% url 'results_app:toppers' c %}" class="btn btn-sm btn-outline-warning">Toppers</a>
+                                            <a href="{% url 'results_app:all_report_cards_pdf' c %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf me-1"></i> Download All PDF</a>
                                         {% endif %}
                                     </div>
                                 </div>

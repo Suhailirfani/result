@@ -89,3 +89,40 @@ class UmmuHabeebaGradingSystemTests(TestCase):
         self.assertEqual(calculate_grade(240, 600, 'UMMU_HABEEBA', is_total=True), ('C', 'Good'))
         # < 240 / 600 = < 40% -> F, Needs Improvement
         self.assertEqual(calculate_grade(239, 600, 'UMMU_HABEEBA', is_total=True), ('F', 'Needs Improvement'))
+
+class AllReportCardsPdfViewTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from results_app.models import Institution, Student, Subject, Exam, Result
+        self.user = User.objects.create_user(username='inst_admin', password='password123')
+        self.institution = Institution.objects.create(
+            user=self.user,
+            name='Test Institute',
+            is_approved=True,
+            grading_system='UMMU_HABEEBA'
+        )
+        self.student = Student.objects.create(
+            institution=self.institution,
+            name='John Doe',
+            register_number='101',
+            student_class=5
+        )
+        self.exam = Exam.objects.create(institution=self.institution, name='Annual Exam')
+        self.subject = Subject.objects.create(institution=self.institution, name='Maths', student_class=5, max_marks=100)
+        Result.objects.create(student=self.student, subject=self.subject, exam=self.exam, marks=80, ce_marks=10)
+
+    def test_all_report_cards_pdf_view_authenticated(self):
+        self.client.login(username='inst_admin', password='password123')
+        response = self.client.get('/staff/class/5/report-cards-pdf/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'all_report_cards_pdf.html')
+        self.assertIn('students_data', response.context)
+        self.assertEqual(len(response.context['students_data']), 1)
+
+    def test_all_report_cards_pdf_view_all_classes(self):
+        self.client.login(username='inst_admin', password='password123')
+        response = self.client.get('/staff/all-report-cards-pdf/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'all_report_cards_pdf.html')
+        self.assertEqual(len(response.context['students_data']), 1)
+

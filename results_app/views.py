@@ -262,6 +262,101 @@ def class_result_view(request, class_num):
     })
 
 @login_required
+def all_report_cards_pdf_view(request, class_num=None):
+    if not hasattr(request.user, 'institution') or not request.user.institution.is_approved:
+        if request.user.is_superuser:
+            inst_id = request.GET.get('inst_id')
+            if inst_id:
+                institution = get_object_or_404(Institution, id=inst_id)
+            else:
+                institution = Institution.objects.filter(is_approved=True).first()
+                if not institution:
+                    messages.error(request, "No approved institution available.")
+                    return redirect('results_app:superadmin_dashboard')
+        else:
+            return redirect('results_app:pending_approval')
+    else:
+        institution = request.user.institution
+
+    from .models import Exam, PassFailResult
+    exams = Exam.objects.filter(institution=institution).order_by('name')
+
+    exam_id = request.GET.get('exam')
+    selected_exam = None
+    if exam_id and exam_id != 'all':
+        selected_exam = get_object_or_404(Exam, id=exam_id, institution=institution)
+
+    student_classes = set(Student.objects.filter(institution=institution).values_list('student_class', flat=True).distinct())
+    subject_classes = set(Subject.objects.filter(institution=institution).values_list('student_class', flat=True).distinct())
+    all_classes = sorted(list(student_classes.union(subject_classes)))
+
+    if class_num and class_num != 'all':
+        students = Student.objects.filter(institution=institution, student_class=class_num).order_by('register_number', 'name')
+    else:
+        students = Student.objects.filter(institution=institution).order_by('student_class', 'register_number', 'name')
+
+    students_data = []
+    for s in students:
+        results_by_exam = {}
+        if institution.grading_system == 'PASS_FAIL':
+            pf_qs = PassFailResult.objects.filter(student=s).select_related('exam')
+            if selected_exam:
+                pf_qs = pf_qs.filter(exam=selected_exam)
+            for r in pf_qs:
+                exam_name = r.exam.name if r.exam else "General Exam"
+                results_by_exam[exam_name] = {'is_passed': r.is_passed}
+        else:
+            res_qs = s.results.select_related('exam', 'subject').all()
+            if selected_exam:
+                res_qs = res_qs.filter(exam=selected_exam)
+            
+            for r in res_qs:
+                exam_name = r.exam.name if r.exam else "General Exam"
+                if exam_name not in results_by_exam:
+                    results_by_exam[exam_name] = {
+                        'marks': [],
+                        'total': 0,
+                        'max_total': 0,
+                        'total_exam': 0,
+                        'total_ce': 0,
+                        'has_failed_subject': False
+                    }
+                results_by_exam[exam_name]['marks'].append(r)
+                score_val = r.total_score if institution.grading_system == 'UMMU_HABEEBA' else r.marks
+                results_by_exam[exam_name]['total'] += score_val
+                results_by_exam[exam_name]['total_exam'] += (r.marks or 0)
+                results_by_exam[exam_name]['total_ce'] += (r.ce_marks or 0)
+                results_by_exam[exam_name]['max_total'] += r.subject.max_marks
+
+                sub_max = r.subject.max_marks
+                if institution.grading_system == 'SUNNI_BOARD' and r.marks < 40:
+                    results_by_exam[exam_name]['has_failed_subject'] = True
+                elif institution.grading_system == 'GULF_SECTOR' and r.marks < (sub_max * 0.3):
+                    results_by_exam[exam_name]['has_failed_subject'] = True
+                elif institution.grading_system == 'HADIYA' and r.marks < (sub_max * 0.4):
+                    results_by_exam[exam_name]['has_failed_subject'] = True
+                elif institution.grading_system == 'UMMU_HABEEBA' and score_val < (sub_max * 0.6):
+                    results_by_exam[exam_name]['has_failed_subject'] = True
+                elif institution.grading_system in ['10_POINT', 'PERCENTAGE'] and score_val < (sub_max * 0.33):
+                    results_by_exam[exam_name]['has_failed_subject'] = True
+                elif institution.grading_system == '9_POINT' and score_val < (sub_max * 0.30):
+                    results_by_exam[exam_name]['has_failed_subject'] = True
+
+        students_data.append({
+            'student': s,
+            'results_by_exam': results_by_exam
+        })
+
+    return render(request, 'all_report_cards_pdf.html', {
+        'institution': institution,
+        'students_data': students_data,
+        'class_num': class_num,
+        'all_classes': all_classes,
+        'exams': exams,
+        'selected_exam': selected_exam,
+    })
+
+@login_required
 def get_ranked_students_for_class(institution, class_num, selected_exam):
     if not selected_exam:
         return []

@@ -43,6 +43,7 @@
             </select>
         </form>
         {% endif %}
+        <a href="{% url 'results_app:all_report_cards_pdf' class_num %}{% if selected_exam %}?exam={{ selected_exam.id }}{% endif %}" class="btn btn-danger w-100 w-sm-auto d-print-none fw-bold"><i class="bi bi-file-earmark-pdf me-1"></i> All Report Cards (PDF)</a>
         <a href="{% url 'results_app:staff_dashboard' %}" class="btn btn-outline-secondary w-100 w-sm-auto d-print-none">Back to Dashboard</a>
         <button onclick="window.print()" class="btn btn-secondary w-100 w-sm-auto d-print-none"><i class="bi bi-printer"></i> Print</button>
     </div>

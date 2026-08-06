@@ -28,16 +28,26 @@
             padding: 0 !important;
             margin: 0 !important;
         }
+        .col-12, .col-md-9, .col-lg-8 {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 100% !important;
+            padding: 0 !important;
+        }
         .report-card-wrapper {
             box-shadow: none !important;
             border: none !important;
             margin: 0 !important;
             padding: 0 !important;
             border-radius: 0 !important;
+            width: 100% !important;
+            max-height: 287mm !important;
+            height: 100vh !important;
+            overflow: hidden !important;
         }
         @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 4mm 6mm;
         }
     }
 
@@ -196,8 +206,9 @@
 
     /* Grand Total & Status Bar */
     .rc-summary-pill {
-        background-color: #e4e4e7;
-        border: 1px solid #d4d4d8;
+        background-color: #ffffff;
+        border: none;
+        box-shadow: none;
         border-radius: 12px;
         padding: 13px 20px;
         text-align: center;
@@ -205,7 +216,6 @@
         font-weight: 900;
         font-size: 1.45rem;
         color: #111;
-        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
     .rc-signatory-section {
@@ -237,7 +247,7 @@
         align-items: center;
         justify-content: center;
         background: #ffffff;
-        padding: 8px 12px;
+        padding: 5px;
         border-radius: 12px;
         border: 1px solid #000000;
         width: 100%;
@@ -449,12 +459,12 @@
                 <!-- Footer Logo Bar -->
                 {% if institution.footer_logo1 or institution.footer_logo2 or institution.footer_logo3 or institution.footer_logo4 %}
                 <div class="pt-2 text-center w-100">
-                    <div class="rc-footer-logo-box">
+                    <div class="rc-footer-logo-box" style="padding: 5px;">
                         <div class="d-flex align-items-center justify-content-around w-100 flex-wrap gap-3">
-                            {% if institution.footer_logo1 %}<img src="{{ institution.footer_logo1.url }}" alt="Footer Logo 1" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
-                            {% if institution.footer_logo2 %}<img src="{{ institution.footer_logo2.url }}" alt="Footer Logo 2" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
-                            {% if institution.footer_logo3 %}<img src="{{ institution.footer_logo3.url }}" alt="Footer Logo 3" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
-                            {% if institution.footer_logo4 %}<img src="{{ institution.footer_logo4.url }}" alt="Footer Logo 4" style="max-height: 95px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                            {% if institution.footer_logo1 %}<img src="{{ institution.footer_logo1.url }}" alt="Footer Logo 1" style="max-height: 130px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                            {% if institution.footer_logo2 %}<img src="{{ institution.footer_logo2.url }}" alt="Footer Logo 2" style="max-height: 130px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                            {% if institution.footer_logo3 %}<img src="{{ institution.footer_logo3.url }}" alt="Footer Logo 3" style="max-height: 130px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
+                            {% if institution.footer_logo4 %}<img src="{{ institution.footer_logo4.url }}" alt="Footer Logo 4" style="max-height: 130px; max-width: 100%; width: auto; object-fit: contain;">{% endif %}
                         </div>
                     </div>
                 </div>
